@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     'rest_framework_simplejwt',
-    "Authentication",
+    # "Auth",
     "djoser",
     "corsheaders",
 ]
@@ -116,13 +116,13 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
 }
 
-AUTH_USER_MODEL = 'Authentication.User'
+# AUTH_USER_MODEL = 'Auth.User'
 
-DJOSER = {
-    'SERIALIZERS' : {
-    'user_create' : 'Authentication.serializers.UserCreateSerializer'
-    }
-}
+# DJOSER = {
+#     'SERIALIZERS' : {
+#     'user_create' : 'Auth.serializers.UserCreateSerializer'
+#     }
+# }
 
 # DJOSER = {
 #     # 'LOGIN_FIELD': 'email',
