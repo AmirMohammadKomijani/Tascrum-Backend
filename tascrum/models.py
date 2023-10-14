@@ -2,8 +2,6 @@ from django.db import models
 from Auth.models import User
 
 
-
-
 class Member(models.Model):
 
     occupations_choice = (
