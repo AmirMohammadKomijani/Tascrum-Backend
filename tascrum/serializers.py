@@ -10,6 +10,19 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id', 'occupations', 'bio', 'profimage', 'birthdate', 'user']
 
+    def update(self, instance, validated_data):
+        instance.occupations = validated_data.get('occupations',instance.occupations)
+        instance.bio = validated_data.get('bio',instance.bio)
+        instance.profimage = validated_data.get('profimage',instance.profimage)
+        instance.birthdate = validated_data.get('birthdate',instance.birthdate)
+        instance.save()
+        
+        user_data = validated_data.pop('user', None)
+        user = instance.user
+        user_serializer = UserProfileSerializer(user, data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
+
 
 ### Home-Account inforamtion feature
 class MemberWorkspaceSerializer(serializers.ModelSerializer):
