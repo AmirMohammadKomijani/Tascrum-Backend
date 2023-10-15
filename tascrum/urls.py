@@ -10,7 +10,8 @@ router = routers.SimpleRouter()
 
 router.register('profile',views.MemberProfileView,basename='profile')
 router.register('workspace',views.WorkspaceView,basename='workspace')
+router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
 router.register('home',views.HomeAccountView,basename='home')
-router.register('test',views.WorkspaceRoleView,basename='test')
+# router.register('test',views.WorkspaceRoleView,basename='test')
 
 urlpatterns = router.urls

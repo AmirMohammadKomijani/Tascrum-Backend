@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MemberSerializer,WorkspaceSerializer,MemberProfileSerializer,WorkspaceRoleSerializer
+from .serializers import MemberSerializer,WorkspaceSerializer,MemberProfileSerializer,CreateWorkspaceSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspace
 from rest_framework.permissions import IsAuthenticated
@@ -33,6 +33,16 @@ class WorkspaceView(ModelViewSet):
         (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
+class CreateWorkspaceView(ModelViewSet):
+    serializer_class = CreateWorkspaceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Workspace.objects.filter(members = member_id)
+
 
 ### Home-Account view
 
@@ -44,14 +54,7 @@ class HomeAccountView(ModelViewSet):
         return Member.objects.filter(user_id = self.request.user.id)
 
 
-###test
-class WorkspaceRoleView(ModelViewSet):
-    allowed_methods = ('GET','HEAD','OPTIONS')
-    serializer_class = WorkspaceRoleSerializer
-    permission_classes = [IsAuthenticated]
-    def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
-        return MemberWorkspace.objects.filter(member = member_id)
+
 
 
 

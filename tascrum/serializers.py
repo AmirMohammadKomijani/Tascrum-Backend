@@ -54,10 +54,40 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
         fields = ['id','name','type','description','members']
+    
+    def create(self, validated_data):
+        # Get the member ID from the serializer data
+        member_id = Member.objects.get(user_id = self.context['user_id'])
+        validated_data['member'] = member_id
+
+        # Create a new Workspace instance with role="Owner"
+        workspace = Workspace.objects.create(**validated_data)
+
+        # Get the Member instance based on the provided member ID
+        member = Member.objects.get(id=member_id)
+
+        # Create a MemberWorkspace instance to associate the member with the workspace and role="Owner"
+        MemberWorkspace.objects.create(member=member, workspace=workspace, role="Owner")
+
+        return workspace
+
+
+class CreateWorkspaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workspace
+        fields = ['id','name','type','description']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        workspace = Workspace.objects.create(**validated_data)
+        MemberWorkspace.objects.create(member=member, workspace=workspace, role="Owner")
+        # workspace.members.add(member)
+
+        return workspace
+
+
+
+
+
 
 ### Board feature -> it includes all details about a board
-class WorkspaceRoleSerializer(serializers.ModelSerializer):
-    # members = WorkspaceMemberSerializer(many=True)
-    class Meta:
-        model = MemberWorkspace
-        fields = ['id','role']
