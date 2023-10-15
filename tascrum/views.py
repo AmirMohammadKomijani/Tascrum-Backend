@@ -8,16 +8,15 @@ from rest_framework import status
 from .serializers import MemberSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member
+from rest_framework.permissions import IsAuthenticated
+
 
 # Create your views here.
 
 class MemberProfileView(ModelViewSet):
-    # queryset = Member.objects.all()
     serializer_class = MemberSerializer
-    # permission_classes = [IsAuthenticated]
-
+    permission_classes = [IsAuthenticated]
     def get_queryset(self):
-        # (member,created) = Member.objects.get_or_create(user_id = self.request.user.id)
         return Member.objects.filter(user_id = self.request.user.id)
 
 
