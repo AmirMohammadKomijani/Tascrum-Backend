@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 
 ### Profile view
 class MemberProfileView(ModelViewSet):
+    allowed_methods = ('GET','PUT','HEAD','OPTIONS')
     serializer_class = MemberProfileSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
@@ -36,6 +37,7 @@ class WorkspaceView(ModelViewSet):
 ### Home-Account view
 
 class HomeAccountView(ModelViewSet):
+    allowed_methods = ('GET','HEAD','OPTIONS')
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
