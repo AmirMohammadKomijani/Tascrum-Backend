@@ -4,10 +4,10 @@ from Auth.serializers import UserProfileSerializer
 
 
 
-class WorkspaceMemberSerializer(serializers.ModelSerializer):
+class MemberWorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
-        fields = ['name', 'type', 'description']
+        fields = ['id','name']
 
 class MemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
@@ -18,7 +18,7 @@ class MemberSerializer(serializers.ModelSerializer):
         
     def get_workspaces(self, obj):
         workspaces = obj.wmembers.all()
-        return WorkspaceSerializer(workspaces, many=True).data
+        return MemberWorkspaceSerializer(workspaces, many=True).data
 
 
 
@@ -34,4 +34,4 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
     class Meta:
         model = Workspace
-        fields = ['name','type','description','members']
+        fields = ['id','name','type','description','members']
