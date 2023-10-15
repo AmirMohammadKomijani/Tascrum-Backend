@@ -39,6 +39,6 @@ class Workspace(models.Model):
 
 
 class MemberWorkspace(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='mrole')
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE,related_name='wrole')
     role = models.CharField(max_length=50)

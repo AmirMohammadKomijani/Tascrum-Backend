@@ -49,33 +49,32 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','profimage','user']
 
+
+class WorkspaceRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberWorkspace
+        fields = ['id','role']
+
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members']
+        fields = ['id','name','type','description','members','role']
+
+    def get_role(self, obj):
+        roles = obj.wrole.all()
+        return WorkspaceRoleSerializer(roles, many=True).data
     
-    def create(self, validated_data):
-        # Get the member ID from the serializer data
-        member_id = Member.objects.get(user_id = self.context['user_id'])
-        validated_data['member'] = member_id
-
-        # Create a new Workspace instance with role="Owner"
-        workspace = Workspace.objects.create(**validated_data)
-
-        # Get the Member instance based on the provided member ID
-        member = Member.objects.get(id=member_id)
-
-        # Create a MemberWorkspace instance to associate the member with the workspace and role="Owner"
-        MemberWorkspace.objects.create(member=member, workspace=workspace, role="Owner")
-
-        return workspace
-
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
         fields = ['id','name','type','description']
+
+    # def get_role(self, obj):
+    #     roles = obj.wrole.all()
+    #     return WorkspaceRoleSerializer(roles, many=True).data
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -84,6 +83,14 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
         # workspace.members.add(member)
 
         return workspace
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.type = validated_data.get('type', instance.type)
+        instance.description = validated_data.get('description', instance.description)
+        instance.save()
+        return instance
+        
 
 
 
