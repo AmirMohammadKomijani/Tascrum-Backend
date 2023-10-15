@@ -44,4 +44,15 @@ class MemberWorkspaceRole(models.Model):
     role = models.CharField(max_length=50)
 
 
+class Board(models.Model):
+    title = models.CharField(max_length=255,null=False)
+    workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE)
+    members = models.ManyToManyField(Member, related_name='bmembers')
+
+
+class MemberBoardRole(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    board = models.ForeignKey(Board, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
 
