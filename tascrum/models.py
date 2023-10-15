@@ -35,5 +35,5 @@ class Workspace(models.Model):
     name = models.CharField(max_length=255,null=True)
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
-    members = models.ManyToManyField(Member,on_delete = models.CASCADE,related_name='wmembers',null=True)
+    members = models.ManyToManyField(Member,related_name='wmembers',null=True)
 
