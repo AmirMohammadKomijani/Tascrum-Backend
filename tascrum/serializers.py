@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace
+from .models import Member,Workspace,MemberWorkspace
 from Auth.serializers import UserProfileSerializer
 
 
@@ -22,7 +22,7 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         user_serializer = UserProfileSerializer(user, data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
-
+        return instance
 
 ### Home-Account inforamtion feature
 class MemberWorkspaceSerializer(serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class MemberSerializer(serializers.ModelSerializer):
         return MemberWorkspaceSerializer(workspaces, many=True).data
 
 
-### Workspace feature -> it includes all details about workspace
+### Workspace feature -> it includes all details about a workspace
 class WorkspaceMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
@@ -54,3 +54,10 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
         fields = ['id','name','type','description','members']
+
+### Board feature -> it includes all details about a board
+class WorkspaceRoleSerializer(serializers.ModelSerializer):
+    # members = WorkspaceMemberSerializer(many=True)
+    class Meta:
+        model = MemberWorkspace
+        fields = ['id','role']

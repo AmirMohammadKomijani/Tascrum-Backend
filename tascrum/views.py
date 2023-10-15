@@ -5,9 +5,9 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MemberSerializer,WorkspaceSerializer,MemberProfileSerializer
+from .serializers import MemberSerializer,WorkspaceSerializer,MemberProfileSerializer,WorkspaceRoleSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace
+from .models import Member,Workspace,MemberWorkspace
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -42,6 +42,16 @@ class HomeAccountView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
+
+
+###test
+class WorkspaceRoleView(ModelViewSet):
+    allowed_methods = ('GET','HEAD','OPTIONS')
+    serializer_class = WorkspaceRoleSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return MemberWorkspace.objects.filter(member = member_id)
 
 
 

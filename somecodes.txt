@@ -1,1 +1,6 @@
 for role of members
+
+class MemberWorkspace(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
