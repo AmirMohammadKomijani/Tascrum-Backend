@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole
 from Auth.serializers import UserProfileSerializer
 
 
@@ -73,9 +73,6 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ['id','name','type','description']
 
-    # def get_role(self, obj):
-    #     roles = obj.wrole.all()
-    #     return WorkspaceRoleSerializer(roles, many=True).data
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -99,3 +96,45 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
 
 
 ### Board feature -> it includes all details about a board
+class BoardMemberSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+    class Meta:
+        model = Member
+        fields = ['id','title','user']
+
+
+class BoardRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberBoardRole
+        fields = ['id','role']
+
+class BoardSerializer(serializers.ModelSerializer):
+    members = BoardMemberSerializer(many=True)
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id','title','members','role']
+
+    def get_role(self, obj):
+        roles = obj.wrole.all()
+        return BoardRoleSerializer(roles, many=True).data
+    
+
+class CreateBoardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Board
+        fields = ['id','title']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        board = Board.objects.create(**validated_data)
+        MemberBoardRole.objects.create(member=member, board=board, role="Owner")
+        # Board.members.add(member)
+
+        return board
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance

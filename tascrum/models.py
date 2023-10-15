@@ -35,7 +35,7 @@ class Workspace(models.Model):
     name = models.CharField(max_length=255,null=True)
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
-    members = models.ManyToManyField(Member, related_name='wmembers')
+    members = models.ManyToManyField(Member, through='MemberWorkspaceRole', related_name='wmembers')
 
 
 class MemberWorkspaceRole(models.Model):
@@ -47,7 +47,7 @@ class MemberWorkspaceRole(models.Model):
 class Board(models.Model):
     title = models.CharField(max_length=255,null=False)
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE)
-    members = models.ManyToManyField(Member, related_name='bmembers')
+    members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
 
 
 class MemberBoardRole(models.Model):
