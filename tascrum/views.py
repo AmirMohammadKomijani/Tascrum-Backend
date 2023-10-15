@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,MemberProfileSerializer,CreateWorkspaceSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspace
+from .models import Member,Workspace,MemberWorkspaceRole
 from rest_framework.permissions import IsAuthenticated
 
 

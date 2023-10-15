@@ -92,7 +92,7 @@ WSGI_APPLICATION = "SEProject.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'SEProject',
+        'NAME': 'SEProject2',
         'HOST': 'localhost',
         'USER': 'root',
         'PASSWORD': 'amirmysql2023'

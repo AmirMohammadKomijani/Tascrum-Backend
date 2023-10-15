@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspace
+from .models import Member,Workspace,MemberWorkspaceRole
 from Auth.serializers import UserProfileSerializer
 
 
@@ -52,7 +52,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MemberWorkspace
+        model = MemberWorkspaceRole
         fields = ['id','role']
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -68,6 +68,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Workspace
         fields = ['id','name','type','description']
@@ -79,7 +80,7 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
         workspace = Workspace.objects.create(**validated_data)
-        MemberWorkspace.objects.create(member=member, workspace=workspace, role="Owner")
+        MemberWorkspaceRole.objects.create(member=member, workspace=workspace, role="Owner")
         # workspace.members.add(member)
 
         return workspace

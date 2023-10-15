@@ -35,10 +35,13 @@ class Workspace(models.Model):
     name = models.CharField(max_length=255,null=True)
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
-    members = models.ManyToManyField(Member, through='MemberWorkspace', related_name='wmembers')
+    members = models.ManyToManyField(Member, related_name='wmembers')
 
 
-class MemberWorkspace(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='mrole')
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE,related_name='wrole')
+class MemberWorkspaceRole(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
     role = models.CharField(max_length=50)
+
+
+
