@@ -10,5 +10,6 @@ router = routers.SimpleRouter()
 
 router.register('profile',views.MemberProfileView,basename='profile')
 router.register('workspace',views.WorkspaceView,basename='workspace')
+router.register('home',views.HomeAccountView,basename='home')
 
 urlpatterns = router.urls

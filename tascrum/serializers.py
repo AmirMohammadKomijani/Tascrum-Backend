@@ -3,7 +3,15 @@ from .models import Member,Workspace
 from Auth.serializers import UserProfileSerializer
 
 
+### Profile feature
+class MemberProfileSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+    class Meta:
+        model = Member
+        fields = ['id', 'occupations', 'bio', 'profimage', 'birthdate', 'user']
 
+
+### Home-Account inforamtion feature
 class MemberWorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
@@ -14,21 +22,19 @@ class MemberSerializer(serializers.ModelSerializer):
     workspaces = serializers.SerializerMethodField()
     class Meta:
         model = Member
-        fields = ['id', 'occupations', 'bio', 'profimage', 'birthdate', 'user', 'workspaces']
+        fields = ['id', 'profimage', 'user', 'workspaces']
         
     def get_workspaces(self, obj):
         workspaces = obj.wmembers.all()
         return MemberWorkspaceSerializer(workspaces, many=True).data
 
 
-
+### Workspace feature -> it includes all details about workspace
 class WorkspaceMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
         model = Member
         fields = ['id','profimage','user']
-
-
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
