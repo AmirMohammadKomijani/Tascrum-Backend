@@ -30,16 +30,26 @@ class MemberWorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ['id','name']
 
+class MemberBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','title']
+
 class MemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     workspaces = serializers.SerializerMethodField()
+    boards = serializers.SerializerMethodField()
     class Meta:
         model = Member
-        fields = ['id', 'profimage', 'user', 'workspaces']
+        fields = ['id', 'profimage', 'user', 'workspaces','boards']
         
     def get_workspaces(self, obj):
         workspaces = obj.wmembers.all()
         return MemberWorkspaceSerializer(workspaces, many=True).data
+    
+    def get_boards(self, obj):
+        boards = obj.bmembers.all()
+        return MemberBoardSerializer(boards, many=True).data
 
 
 ### Workspace feature -> it includes all details about a workspace
@@ -57,14 +67,14 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members','role']
+        fields = ['id','name','type','description','members']
 
-    def get_role(self, obj):
-        roles = obj.wrole.all()
-        return WorkspaceRoleSerializer(roles, many=True).data
+    # def get_role(self, obj):
+    #     roles = obj.wrole.all()
+    #     return WorkspaceRoleSerializer(roles, many=True).data
     
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
@@ -92,15 +102,12 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
 ### Board feature -> it includes all details about a board
 class BoardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
         model = Member
-        fields = ['id','title','user']
+        fields = ['id','user']
 
 
 class BoardRoleSerializer(serializers.ModelSerializer):
@@ -113,18 +120,22 @@ class BoardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','members','role']
+        fields = ['id','title','workspace','role','members']
 
     def get_role(self, obj):
-        roles = obj.wrole.all()
+        roles = obj.brole.all()
         return BoardRoleSerializer(roles, many=True).data
     
 
 class CreateBoardSerializer(serializers.ModelSerializer):
-
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title']
+        fields = ['id','title','workspace','role']
+
+    def get_role(self, obj):
+        roles = obj.brole.all()
+        return BoardRoleSerializer(roles, many=True).data
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
