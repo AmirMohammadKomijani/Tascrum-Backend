@@ -55,4 +55,6 @@ class MemberBoardRole(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
     role = models.CharField(max_length=50)
 
-
+class List(models.Model):
+    title = models.CharField(max_length=255,null=False)
+    board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')
