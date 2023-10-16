@@ -5,20 +5,75 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MemberSerializer
+from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,CreateBoardSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole
+from rest_framework.permissions import IsAuthenticated
+
 
 # Create your views here.
 
+
+### Profile view
 class MemberProfileView(ModelViewSet):
-    # queryset = Member.objects.all()
-    serializer_class = MemberSerializer
-    # permission_classes = [IsAuthenticated]
+    allowed_methods = ('GET','PUT','HEAD','OPTIONS')
+    serializer_class = MemberProfileSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        return Member.objects.filter(user_id = self.request.user.id)
+
+
+
+### workspace view
+class WorkspaceView(ModelViewSet):
+    serializer_class = WorkspaceSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # (member,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Workspace.objects.filter(members = member_id)
+
+class CreateWorkspaceView(ModelViewSet):
+    serializer_class = CreateWorkspaceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Workspace.objects.filter(members = member_id)
+
+### board view
+class BoardView(ModelViewSet):
+    serializer_class = BoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Board.objects.filter(members = member_id)
+
+class CreateBoardView(ModelViewSet):
+    serializer_class = CreateBoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Board.objects.filter(members = member_id)
+
+
+### Home-Account view
+
+class HomeAccountView(ModelViewSet):
+    allowed_methods = ('GET','HEAD','OPTIONS')
+    serializer_class = MemberSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
+
+
+
 
 
 
