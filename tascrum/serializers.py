@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List
 from Auth.serializers import UserProfileSerializer
 
 
@@ -108,9 +108,6 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.save()
         return instance
-        
-
-
 
 ### Board feature -> it includes all details about a board
 class BoardMemberSerializer(serializers.ModelSerializer):
@@ -118,6 +115,11 @@ class BoardMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['id','user']
+
+class BoardListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['id','title']
 
 
 class BoardRoleSerializer(serializers.ModelSerializer):
@@ -128,13 +130,17 @@ class BoardRoleSerializer(serializers.ModelSerializer):
 class BoardSerializer(serializers.ModelSerializer):
     members = BoardMemberSerializer(many=True)
     role = serializers.SerializerMethodField()
+    list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role','members']
+        fields = ['id','title','workspace','role','members','list']
 
     def get_role(self, obj):
         roles = obj.brole.all()
         return BoardRoleSerializer(roles, many=True).data
+    def get_list(self, obj):
+        list = obj.lboard.all()
+        return BoardListSerializer(list, many=True).data
     
 
 class CreateBoardSerializer(serializers.ModelSerializer):
@@ -159,3 +165,29 @@ class CreateBoardSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get('title', instance.title)
         instance.save()
         return instance
+
+
+### List serializers
+class BoardListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id']
+
+class ListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['id','title','board']
+
+class CreateListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['id','title','board']
+    
+    def create(self, validated_data):
+        return List.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
+    

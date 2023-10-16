@@ -5,9 +5,10 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,CreateBoardSerializer
+from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
+                        CreateBoardSerializer,CreateListSerializer,ListSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -63,6 +64,28 @@ class CreateBoardView(ModelViewSet):
         return Board.objects.filter(members = member_id)
 
 
+### List view
+class ListView(ModelViewSet):
+    serializer_class = ListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        board_id = Board.objects.filter(members = member_id)
+        return List.objects.filter(board__in=board_id)
+
+class CreateListView(ModelViewSet):
+    serializer_class = CreateListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        board_id = Board.objects.filter(members = member_id)
+        return List.objects.filter(board__in=board_id)
+
+
 ### Home-Account view
 
 class HomeAccountView(ModelViewSet):
@@ -71,9 +94,3 @@ class HomeAccountView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
-
-
-
-
-
-
