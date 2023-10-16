@@ -14,8 +14,6 @@ class Member(models.Model):
         User, on_delete=models.CASCADE,related_name='users',null=False)\
     
     occupations = models.CharField(max_length=255,null=False,choices=occupations_choice)
-    bio = models.TextField()
-    profimage = models.ImageField(upload_to='Member/Profile',null=False,default='default_profile.png')
-    birthdate = models.DateField()
-
-
+    bio = models.TextField(null=True)
+    profimage = models.ImageField(upload_to='Member/Profile',null=True,default='default_profile.png')
+    birthdate = models.DateField(null=True)
