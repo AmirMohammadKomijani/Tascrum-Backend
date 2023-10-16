@@ -58,3 +58,14 @@ class MemberBoardRole(models.Model):
 class List(models.Model):
     title = models.CharField(max_length=255,null=False)
     board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')
+
+
+class Card(models.Model):
+    title = models.CharField(max_length=255,null=False)
+    List = models.ForeignKey(List,on_delete=models.CASCADE,related_name='clist')
+    members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
+
+class MemberCardRole(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
+    card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
+    role = models.CharField(max_length=50)
