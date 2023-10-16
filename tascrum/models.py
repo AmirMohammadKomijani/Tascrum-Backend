@@ -62,7 +62,7 @@ class List(models.Model):
 
 class Card(models.Model):
     title = models.CharField(max_length=255,null=False)
-    List = models.ForeignKey(List,on_delete=models.CASCADE,related_name='clist')
+    list = models.ForeignKey(List,on_delete=models.CASCADE,related_name='clist')
     members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
 
 class MemberCardRole(models.Model):

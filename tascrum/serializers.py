@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
 
 
@@ -88,7 +88,6 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Workspace
         fields = ['id','name','type','description']
@@ -168,15 +167,25 @@ class CreateBoardSerializer(serializers.ModelSerializer):
 
 
 ### List serializers
-class BoardListSerializer(serializers.ModelSerializer):
+class ListBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id']
 
+class ListCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','title']
+
 class ListSerializer(serializers.ModelSerializer):
+    card = serializers.SerializerMethodField()
     class Meta:
         model = List
-        fields = ['id','title','board']
+        fields = ['id','title','board','card']
+    
+    def get_card(self, obj):
+        cards = obj.clist.all()
+        return ListCardSerializer(cards, many=True).data
 
 class CreateListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -190,4 +199,55 @@ class CreateListSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get('title', instance.title)
         instance.save()
         return instance
+
+### Card Serializer
+class CardMemberSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+    class Meta:
+        model = Member
+        fields = ['id','user']
+
+class CardListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['id','title']
+
+
+class CardRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberCardRole
+        fields = ['id','role']
+
+class CardSerializer(serializers.ModelSerializer):
+    members = CardMemberSerializer(many=True)
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Card
+        fields = ['id','title','list','role','members']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
     
+
+class CreateCardSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Card
+        fields = ['id','title','list','role']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        card = Card.objects.create(**validated_data)
+        MemberCardRole.objects.create(member=member, card=card, role="assigned")
+
+        return card
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
