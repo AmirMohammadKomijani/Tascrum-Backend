@@ -95,7 +95,7 @@ DATABASES = {
         'NAME': 'SEProject',
         'HOST': 'localhost',
         'USER': 'root',
-        'PASSWORD': 'thisisSaba80'
+        'PASSWORD': 'amirmysql2023'
     },
     # 'lite_db':{
     #     "ENGINE": "django.db.backends.sqlite3",
