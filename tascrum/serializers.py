@@ -59,6 +59,11 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','profimage','user']
 
+class WorkspaceBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','title']
+
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,14 +72,19 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
-    # role = serializers.SerializerMethodField()
+    boards = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members']
+        fields = ['id','name','type','description','members','role','boards']
 
-    # def get_role(self, obj):
-    #     roles = obj.wrole.all()
-    #     return WorkspaceRoleSerializer(roles, many=True).data
+    def get_role(self, obj):
+        roles = obj.wrole.all()
+        return WorkspaceRoleSerializer(roles, many=True).data
+    
+    def get_boards(self, obj):
+        roles = obj.wboard.all()
+        return WorkspaceBoardSerializer(roles, many=True).data
     
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):

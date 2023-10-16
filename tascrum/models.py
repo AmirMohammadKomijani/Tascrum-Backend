@@ -39,14 +39,14 @@ class Workspace(models.Model):
 
 
 class MemberWorkspaceRole(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='mrole')
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE,related_name='wrole')
     role = models.CharField(max_length=50)
 
 
 class Board(models.Model):
     title = models.CharField(max_length=255,null=False)
-    workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE)
+    workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
 
 
