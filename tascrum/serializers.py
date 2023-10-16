@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole
 from Auth.serializers import UserProfileSerializer
 
 
@@ -30,16 +30,26 @@ class MemberWorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ['id','name']
 
+class MemberBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','title']
+
 class MemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     workspaces = serializers.SerializerMethodField()
+    boards = serializers.SerializerMethodField()
     class Meta:
         model = Member
-        fields = ['id', 'profimage', 'user', 'workspaces']
+        fields = ['id', 'profimage', 'user', 'workspaces','boards']
         
     def get_workspaces(self, obj):
         workspaces = obj.wmembers.all()
         return MemberWorkspaceSerializer(workspaces, many=True).data
+    
+    def get_boards(self, obj):
+        boards = obj.bmembers.all()
+        return MemberBoardSerializer(boards, many=True).data
 
 
 ### Workspace feature -> it includes all details about a workspace
@@ -49,6 +59,11 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','profimage','user']
 
+class WorkspaceBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','title']
+
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,14 +72,19 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = WorkspaceMemberSerializer(many=True)
+    boards = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members','role']
+        fields = ['id','name','type','description','members','role','boards']
 
     def get_role(self, obj):
         roles = obj.wrole.all()
         return WorkspaceRoleSerializer(roles, many=True).data
+    
+    def get_boards(self, obj):
+        roles = obj.wboard.all()
+        return WorkspaceBoardSerializer(roles, many=True).data
     
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
@@ -73,9 +93,6 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ['id','name','type','description']
 
-    # def get_role(self, obj):
-    #     roles = obj.wrole.all()
-    #     return WorkspaceRoleSerializer(roles, many=True).data
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -95,7 +112,50 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
 ### Board feature -> it includes all details about a board
+class BoardMemberSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+    class Meta:
+        model = Member
+        fields = ['id','user']
+
+
+class BoardRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberBoardRole
+        fields = ['id','role']
+
+class BoardSerializer(serializers.ModelSerializer):
+    members = BoardMemberSerializer(many=True)
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id','title','workspace','role','members']
+
+    def get_role(self, obj):
+        roles = obj.brole.all()
+        return BoardRoleSerializer(roles, many=True).data
+    
+
+class CreateBoardSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id','title','workspace','role']
+
+    def get_role(self, obj):
+        roles = obj.brole.all()
+        return BoardRoleSerializer(roles, many=True).data
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        board = Board.objects.create(**validated_data)
+        MemberBoardRole.objects.create(member=member, board=board, role="Owner")
+        # Board.members.add(member)
+
+        return board
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
