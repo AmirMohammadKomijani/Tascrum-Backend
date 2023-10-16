@@ -6,9 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
-                        CreateBoardSerializer,CreateListSerializer,ListSerializer
+                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -84,6 +84,27 @@ class CreateListView(ModelViewSet):
         (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
         board_id = Board.objects.filter(members = member_id)
         return List.objects.filter(board__in=board_id)
+
+
+### Card View
+class CardView(ModelViewSet):
+    serializer_class = CardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Card.objects.filter(members = member_id)
+
+class CreateCardView(ModelViewSet):
+    serializer_class = CreateCardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        return Card.objects.filter(members = member_id)
+
 
 
 ### Home-Account view

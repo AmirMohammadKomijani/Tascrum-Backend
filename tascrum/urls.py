@@ -15,6 +15,8 @@ router.register('board',views.BoardView,basename='board')
 router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('list',views.ListView,basename='list')
 router.register('crlist',views.CreateListView,basename='crlist')
+router.register('card',views.CardView,basename='card')
+router.register('crcard',views.CreateCardView,basename='crcard')
 router.register('home',views.HomeAccountView,basename='home')
 # router.register('test',views.WorkspaceRoleView,basename='test')
 
