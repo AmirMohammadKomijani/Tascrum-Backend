@@ -21,6 +21,7 @@ class MemberProfileView(ModelViewSet):
     serializer_class = MemberProfileSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
+        (member,created) = Member.objects.get_or_create(user_id = self.request.user.id)
         return Member.objects.filter(user_id = self.request.user.id)
 
 
