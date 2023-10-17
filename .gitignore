@@ -7,6 +7,8 @@ db.sqlite3
 media
 somecodes.txt
 q
+*.zip
+APIs
 
 # Backup files # 
 *.bak 
