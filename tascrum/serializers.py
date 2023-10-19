@@ -127,12 +127,12 @@ class BoardRoleSerializer(serializers.ModelSerializer):
         fields = ['id','role']
 
 class BoardSerializer(serializers.ModelSerializer):
-    members = BoardMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    # members = BoardMemberSerializer(many=True)
+    # role = serializers.SerializerMethodField()
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role','members','list']
+        fields = ['id','title','workspace','list']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -219,11 +219,11 @@ class CardRoleSerializer(serializers.ModelSerializer):
         fields = ['id','role']
 
 class CardSerializer(serializers.ModelSerializer):
-    members = CardMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    # members = CardMemberSerializer(many=True)
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members']
+        fields = ['id','title','list']
 
     def get_role(self, obj):
         roles = obj.crole.all()
