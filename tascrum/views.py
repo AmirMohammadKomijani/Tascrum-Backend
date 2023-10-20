@@ -3,12 +3,14 @@ from django.db.models.aggregates import Count
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
-                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer
+                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,ChangePasswordSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card
+from Auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -21,8 +23,16 @@ class MemberProfileView(ModelViewSet):
     serializer_class = MemberProfileSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
-        (member,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member = Member.objects.get(user_id = self.request.user.id)
         return Member.objects.filter(user_id = self.request.user.id)
+
+
+class ChangePasswordView(ModelViewSet):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated,]
+    def get_queryset(self):
+        user = self.request.user.id
+        return User.objects.filter(id = user)
 
 
 
@@ -32,7 +42,7 @@ class WorkspaceView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
 class CreateWorkspaceView(ModelViewSet):
@@ -42,7 +52,7 @@ class CreateWorkspaceView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
 ### board view
@@ -51,7 +61,7 @@ class BoardView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
 
 class CreateBoardView(ModelViewSet):
@@ -61,7 +71,7 @@ class CreateBoardView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
 
 
@@ -71,7 +81,7 @@ class ListView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         board_id = Board.objects.filter(members = member_id)
         return List.objects.filter(board__in=board_id)
 
@@ -82,7 +92,7 @@ class CreateListView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         board_id = Board.objects.filter(members = member_id)
         return List.objects.filter(board__in=board_id)
 
@@ -93,17 +103,18 @@ class CardView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Card.objects.filter(members = member_id)
 
 class CreateCardView(ModelViewSet):
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
 
+
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
-        (member_id,created) = Member.objects.get_or_create(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id = self.request.user.id)
         return Card.objects.filter(members = member_id)
 
 
