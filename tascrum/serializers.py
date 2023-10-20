@@ -1,6 +1,8 @@
+
 from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
+from Auth.models import User
 
 
 ### Profile feature
@@ -23,6 +25,19 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
         return instance
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    Newpassword = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['Newpassword']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        user.set_password(validated_data['Newpassword'])
+        user.save()
+        return user
 
 ### Home-Account inforamtion feature
 class MemberWorkspaceSerializer(serializers.ModelSerializer):
@@ -235,19 +250,3 @@ class CreateCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ['id','title','list']
-
-    def get_role(self, obj):
-        roles = obj.crole.all()
-        return CardRoleSerializer(roles, many=True).data
-
-    def create(self, validated_data):
-        member = Member.objects.get(user_id = self.context['user_id'])
-        card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(member=member, card=card, role="assigned")
-
-        return card
-    
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.save()
-        return instance
