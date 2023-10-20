@@ -25,20 +25,6 @@ class MemberProfileView(ModelViewSet):
         member = Member.objects.get(user_id = self.request.user.id)
         return Member.objects.filter(user_id = self.request.user.id)
 
-    # @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
-    # def me(self, request):
-    #     (member, created) = Member.objects.get(
-    #         user_id=request.user.id)
-    #     # baseInfo = User.objects.prefetch_related('member_set').all()
-    #     # if request.method == 'GET':
-    #     #     serializer = MemberProfileSerializer(member)
-    #     #     return Response(serializer.data)
-    #     if request.method == 'PUT':
-    #         serializer = MemberProfileSerializer(member, data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         serializer.save()
-    #         return Response(serializer.data)
-
 
 
 ### workspace view

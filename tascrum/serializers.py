@@ -71,12 +71,12 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
         fields = ['id','role']
 
 class WorkspaceSerializer(serializers.ModelSerializer):
-    members = WorkspaceMemberSerializer(many=True)
+    # members = WorkspaceMemberSerializer(many=True)
     boards = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members','role','boards']
+        fields = ['id','name','type','description','boards']
 
     def get_role(self, obj):
         roles = obj.wrole.all()
@@ -231,10 +231,10 @@ class CardSerializer(serializers.ModelSerializer):
     
 
 class CreateCardSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role']
+        fields = ['id','title','list']
 
     def get_role(self, obj):
         roles = obj.crole.all()
