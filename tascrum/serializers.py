@@ -130,7 +130,7 @@ class BoardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role','members']
+        fields = ['id','title','workspace','role','members', 'backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -141,7 +141,7 @@ class CreateBoardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role']
+        fields = ['id','title','workspace','role', 'backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -157,5 +157,6 @@ class CreateBoardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.backgroundImage = validated_data.get('backgroundImage' , instance.backgroundImage)
         instance.save()
         return instance
