@@ -147,7 +147,7 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','list']
+        fields = ['id','title','workspace','role','members', 'backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -161,7 +161,7 @@ class CreateBoardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role']
+        fields = ['id','title','workspace','role', 'backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -177,6 +177,7 @@ class CreateBoardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.backgroundImage = validated_data.get('backgroundImage' , instance.backgroundImage)
         instance.save()
         return instance
 
@@ -212,41 +213,6 @@ class CreateListSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.backgroundImage = validated_data.get('backgroundImage' , instance.backgroundImage)
         instance.save()
         return instance
-
-### Card Serializer
-class CardMemberSerializer(serializers.ModelSerializer):
-    user = UserProfileSerializer()
-    class Meta:
-        model = Member
-        fields = ['id','user']
-
-class CardListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = List
-        fields = ['id','title']
-
-
-class CardRoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MemberCardRole
-        fields = ['id','role']
-
-class CardSerializer(serializers.ModelSerializer):
-    # members = CardMemberSerializer(many=True)
-    # role = serializers.SerializerMethodField()
-    class Meta:
-        model = Card
-        fields = ['id','title','list']
-
-    def get_role(self, obj):
-        roles = obj.crole.all()
-        return CardRoleSerializer(roles, many=True).data
-    
-
-class CreateCardSerializer(serializers.ModelSerializer):
-    # role = serializers.SerializerMethodField()
-    class Meta:
-        model = Card
-        fields = ['id','title','list']

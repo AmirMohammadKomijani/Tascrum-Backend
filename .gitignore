@@ -3,7 +3,13 @@
 *.pot
 *.pyc
 __pycache__
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
 db.sqlite3
+media
 media
 somecodes.txt
 q
