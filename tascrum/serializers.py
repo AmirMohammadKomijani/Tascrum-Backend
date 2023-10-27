@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
+from django.utils import timezone
+
 
 
 ### Profile feature
@@ -147,7 +149,7 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role','members', 'backgroundImage']
+        fields = ['id','title','workspace','list','backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -158,10 +160,10 @@ class BoardSerializer(serializers.ModelSerializer):
     
 
 class CreateBoardSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','role', 'backgroundImage']
+        fields = ['id','title','workspace','backgroundImage']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -218,7 +220,7 @@ class CreateListSerializer(serializers.ModelSerializer):
         return instance
 
 
-### Card Serializer
+###### Card Serializer
 class CardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
@@ -236,23 +238,24 @@ class CardRoleSerializer(serializers.ModelSerializer):
         model = MemberCardRole
         fields = ['id','role']
 
+## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members']
+        fields = ['id','title','list','role','members','startdate','duedate','reminder']
 
     def get_role(self, obj):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
     
-
+## create card
 class CreateCardSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role']
+        fields = ['id','title','list','role','startdate','duedate', 'reminder']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -260,6 +263,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
+        validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
         MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
@@ -267,5 +271,32 @@ class CreateCardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.startdate = validated_data.get('startdate' , instance.startdate)
+        instance.duedate = validated_data.get('duedate' , instance.duedate)
+        instance.reminder = validated_data.get('reminder', instance.reminder)
         instance.save()
         return instance
+
+## assign members to card
+class CardMemberAssignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['id']
+class CardAssignSerializer(serializers.ModelSerializer):
+    # members = CardMemberAssignSerializer(many=True)
+    class Meta:
+        model = MemberCardRole
+        fields = ['id','card','member']
+    
+    def create(self, validated_data):
+        owner = Member.objects.get(user_id = self.context['user_id'])
+        board_role = MemberBoardRole.objects.filter(member = owner).first()
+        if board_role.role == "owner":
+            # members_data = validated_data.pop('member')
+            # for member_data in members_data:
+            #     member_id = member_data['id']
+            #     member = Member.objects.get(id=member_id)
+            return MemberCardRole.objects.create(**validated_data)
+        else:
+            raise serializers.ValidationError("you are not owner of this board.")
+ 
