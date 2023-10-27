@@ -21,6 +21,7 @@ class Member(models.Model):
 
 
 class Workspace(models.Model):
+    
     workspace_choice = (
     ('operations','operations'),
     ('education','education'),
@@ -36,7 +37,7 @@ class Workspace(models.Model):
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
     members = models.ManyToManyField(Member, related_name='wmembers',through='MemberWorkspaceRole')
-
+    backgroundImage = models.ImageField(null=True, upload_to='images/')
 
 class MemberWorkspaceRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
