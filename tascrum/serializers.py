@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 
@@ -267,5 +267,20 @@ class CreateCardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
+
+class BurndownChartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BurndownChart
+        fields = ['id', 'user', 'date', 'done', 'estimate']
+
+    def create(self, validated_data):
+        return BurndownChart.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.date = validated_data.get('date', instance.date)
+        instance.done = validated_data.get('done', instance.done)
+        instance.estimate = validated_data.get('estimate', instance.estimate)
         instance.save()
         return instance
