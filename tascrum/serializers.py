@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
+from django.utils import timezone
+
 
 
 ### Profile feature
@@ -242,7 +244,7 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members']
+        fields = ['id','title','list','role','members','startdate','duedate','reminder']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -253,7 +255,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list']
+        fields = ['id','title','list','role','startdate','duedate', 'reminder']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -261,6 +263,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
+        validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
         MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
@@ -268,6 +271,9 @@ class CreateCardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.startdate = validated_data.get('startdate' , instance.startdate)
+        instance.duedate = validated_data.get('duedate' , instance.duedate)
+        instance.reminder = validated_data.get('reminder', instance.reminder)
         instance.save()
         return instance
 
