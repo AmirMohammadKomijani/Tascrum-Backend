@@ -131,6 +131,13 @@ class BoardMemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','user']
 
+
+class BoardMembersSerializer(serializers.ModelSerializer):
+    members = BoardMemberSerializer(many=True)
+    class Meta:
+        model = Board
+        fields = ['id','members']
+
 class BoardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
