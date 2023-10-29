@@ -307,7 +307,7 @@ class CardAssignSerializer(serializers.ModelSerializer):
 class FindUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username','email']
+        fields = ['id','username','email']
 
 class AddMemberSerializer(serializers.ModelSerializer):
     class Meta:
