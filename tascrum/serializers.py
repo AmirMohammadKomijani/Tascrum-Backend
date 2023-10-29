@@ -323,7 +323,8 @@ class AddMemberSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         owner = Member.objects.get(user_id = self.context['user_id'])
-        board_role = MemberBoardRole.objects.filter(member = owner).first()
+        board = validated_data.get('board')
+        board_role = MemberBoardRole.objects.filter(member = owner,board=board).first()
         if board_role.role == "owner":
             return MemberBoardRole.objects.create(**validated_data)
         else:
