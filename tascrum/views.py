@@ -133,13 +133,13 @@ class CardAssignmentView(ModelViewSet):
 
 class FindUserView(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = AddMemberSerializer
+    serializer_class = FindUserSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = SearchFilter
+    filter_backends = [SearchFilter]
     search_fields = ['username','email']
 
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+    # def get_serializer_context(self):
+    #     return {'user_id':self.request.user.id}
 
     # def get_queryset(self):
     #     member_id = Member.objects.get(user_id = self.request.user.id)
