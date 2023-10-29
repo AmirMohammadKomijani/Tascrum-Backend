@@ -5,10 +5,12 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.decorators import action
 from rest_framework.response import Response
+# from django_filters import DjangoFilterBackend
+from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
-                            CardAssignSerializer,ChangePasswordSerializer
+                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.models import User
@@ -110,8 +112,6 @@ class CardView(ModelViewSet):
 class CreateCardView(ModelViewSet):
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
-
-
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
@@ -127,6 +127,35 @@ class CardAssignmentView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberCardRole.objects.filter(member=member_id)
+
+
+### invite member
+
+class FindUserView(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = FindUserSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['username','email']
+
+    # def get_serializer_context(self):
+    #     return {'user_id':self.request.user.id}
+
+    # def get_queryset(self):
+    #     member_id = Member.objects.get(user_id = self.request.user.id)
+    #     return MemberBoardRole.objects.filter(member=member_id)
+
+class InviteMemberView(ModelViewSet):
+    serializer_class = AddMemberSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return MemberBoardRole.objects.filter(member=member_id)
+
 
 
 

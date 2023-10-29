@@ -53,7 +53,7 @@ class Board(models.Model):
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
-    role = models.CharField(max_length=50)
+    role = models.CharField(max_length=50,default='member')
 
 class List(models.Model):
     title = models.CharField(max_length=255,null=False)

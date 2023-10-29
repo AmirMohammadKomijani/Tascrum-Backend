@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
@@ -244,9 +243,10 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members','startdate','duedate','reminder']
+        fields = ['id','title','list','members','startdate','duedate','reminder']
 
-    def get_role(self, obj):
+
+def get_role(self, obj):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
     
@@ -255,7 +255,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','startdate','duedate', 'reminder']
+        fields = ['id','title','list','startdate','duedate', 'reminder']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -265,7 +265,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
@@ -299,4 +299,27 @@ class CardAssignSerializer(serializers.ModelSerializer):
             return MemberCardRole.objects.create(**validated_data)
         else:
             raise serializers.ValidationError("you are not owner of this board.")
- 
+
+
+
+#### invite member to board
+
+class FindUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username','email']
+
+class AddMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberBoardRole
+        fields = ['member','board']
+    
+    def create(self, validated_data):
+        owner = Member.objects.get(user_id = self.context['user_id'])
+        board_role = MemberBoardRole.objects.filter(member = owner).first()
+        if board_role.role == "owner":
+            return MemberBoardRole.objects.create(**validated_data)
+        else:
+            raise serializers.ValidationError("you are not owner of this board.")
+
+
