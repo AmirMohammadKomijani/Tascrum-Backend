@@ -48,11 +48,37 @@ class Board(models.Model):
     title = models.CharField(max_length=255,null=False)
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
-
+    backgroundImage = models.ImageField(null=True, upload_to='images/')
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
-    role = models.CharField(max_length=50)
+    role = models.CharField(max_length=50,default='member')
+
+class List(models.Model):
+    title = models.CharField(max_length=255,null=False)
+    board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')
 
 
+class Card(models.Model):
+    title = models.CharField(max_length=255,null=False)
+    list = models.ForeignKey(List,on_delete=models.CASCADE,related_name='clist')
+    members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
+    startdate = models.DateTimeField(null=True)
+    duedate = models.DateTimeField(null=True)
+    reminder_choice =(
+    ('At time of due date','At time of due date'),
+    ('5 Minuets before','5 Minuets before'),
+    ('10 Minuets before','10 Minuets before'),
+    ('15 Minuets before','15 Minuets before'),
+    ('1 Hour before','1 Hour before'),
+    ('2 Hour before','2 Hour before'),
+    ('1 Day before','1 Day before'),
+    ('2 Days before','2 Days before'),
+    ) 
+    reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
+    
+class MemberCardRole(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
+    card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
+    role = models.CharField(max_length=50,default='member')
