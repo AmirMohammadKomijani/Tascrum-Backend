@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
-                            CardAssignSerializer,ChangePasswordSerializer
+                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.models import User
@@ -110,8 +110,6 @@ class CardView(ModelViewSet):
 class CreateCardView(ModelViewSet):
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
-
-
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
@@ -127,6 +125,20 @@ class CardAssignmentView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberCardRole.objects.filter(member=member_id)
+
+
+### invite member
+class InviteMemberView(ModelViewSet):
+    serializer_class = AddMemberSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return MemberBoardRole.objects.filter(member=member_id)
+
 
 
 
