@@ -26,7 +26,9 @@ SECRET_KEY = "django-insecure-8%(411=*i)z)6c*^l1dsh$jcr)yd-!1=8sy^j8j!cwjzj+^mzo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['amirmohammadkomijani.pythonanywhere.com','127.0.0.1']
+
 
 
 # Application definition
@@ -39,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'django_filters',
     'rest_framework_simplejwt',
     "Auth",
     "tascrum",
@@ -76,6 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "SEProject.wsgi.application"
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Database
@@ -131,7 +135,7 @@ DJOSER = {
 #     'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
 #     # 'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
 #     # 'SEND_ACTIVATION_EMAIL': False,
- 
+
 #     'SEND_ACTIVATION_EMAIL': True,
 
 # }
@@ -176,6 +180,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
