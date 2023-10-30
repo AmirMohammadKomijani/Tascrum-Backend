@@ -6,10 +6,11 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
-                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,ChangePasswordSerializer
+                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,ChangePasswordSerializer,CreateBurndownChartSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,BurndownChart
 from Auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
@@ -127,3 +128,27 @@ class HomeAccountView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
+    
+
+
+
+
+# class BurndownChartListCreateView(generics.ListCreateAPIView):
+#     queryset = BurndownChart.objects.all()
+#     serializer_class = CreateBurndownChartSerializer
+
+# class BurndownChartDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = BurndownChart.objects.all()
+#     serializer_class = CreateBurndownChartSerializer
+
+
+
+class CreateBurndownChartView(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return BurndownChart.objects.filter(members = member_id)
