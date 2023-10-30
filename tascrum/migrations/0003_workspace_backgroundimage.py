@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tascrum', '0002_memberworkspacerole_alter_member_bio_and_more'),
+        ('tascrum', '0002_board_memberworkspacerole_alter_member_bio_and_more'),
     ]
 
     operations = [
