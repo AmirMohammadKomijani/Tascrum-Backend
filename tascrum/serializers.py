@@ -273,7 +273,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
@@ -292,12 +292,14 @@ class CardMemberAssignSerializer(serializers.ModelSerializer):
         fields = ['id']
 class CardAssignSerializer(serializers.ModelSerializer):
     # members = CardMemberAssignSerializer(many=True)
+    # board = serializers.IntegerField()
     class Meta:
         model = MemberCardRole
         fields = ['id','card','member']
     
     def create(self, validated_data):
         owner = Member.objects.get(user_id = self.context['user_id'])
+        # board_id = validated_data.get('board')
         board_role = MemberBoardRole.objects.filter(member = owner).first()
         if board_role.role == "owner":
             # members_data = validated_data.pop('member')
