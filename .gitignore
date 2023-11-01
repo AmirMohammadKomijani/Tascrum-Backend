@@ -3,7 +3,13 @@
 *.pot
 *.pyc
 __pycache__
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
 db.sqlite3
+media
 media
 somecodes.txt
 q
@@ -108,7 +114,7 @@ venv/
 ENV/ 
 env.bak/ 
 venv.bak/ 
-venv
+
 # mkdocs documentation 
 /site 
 
@@ -138,4 +144,4 @@ GitHub.sublime-settings
 !.vscode/tasks.json 
 !.vscode/launch.json 
 !.vscode/extensions.json 
-.history 
+.history
