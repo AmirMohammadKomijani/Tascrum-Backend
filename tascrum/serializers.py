@@ -322,6 +322,10 @@ class MemberFindUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['profimage']
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['profimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['profimage']
+    #     return representation
 class FindUserSerializer(serializers.ModelSerializer):
     member = serializers.SerializerMethodField()
     class Meta:
@@ -332,22 +336,34 @@ class FindUserSerializer(serializers.ModelSerializer):
         members = obj.users.all()
         return MemberFindUserSerializer(members, many=True).data
 
+class MemberAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['id']
+
 class AddMemberSerializer(serializers.ModelSerializer):
+    # member = serializers.ListField(child=MemberAddSerializer())
+
     class Meta:
         model = MemberBoardRole
-        fields = ['member','board']
-    
+        fields = ['member', 'board']
+
+    # def to_internal_value(self, data):
+    #     member_ids = data.get('member', [])
+    #     validated_data = super().to_internal_value(data)
+    #     validated_data['member'] = member_ids
+    #     return validated_data
+
     def create(self, validated_data):
-        owner = Member.objects.get(user_id = self.context['user_id'])
+        owner = Member.objects.get(user_id=self.context['user_id'])
         board = validated_data.get('board')
-        newMember = validated_data.get('member')
-        board_role = MemberBoardRole.objects.filter(member = owner,board=board).first()
+        new_members = validated_data.get('member')
+        board_role = MemberBoardRole.objects.filter(member=owner, board=board).first()
+
         if board_role.role == "owner":
-            if not MemberBoardRole.objects.filter(member = newMember,board=board).exists(): 
-                return MemberBoardRole.objects.create(member = newMember,board=board,role='member')
-            else:
-                raise serializers.ValidationError("this member is part of this board already.")
+                MemberBoardRole.objects.create(member=new_members, board=board, role='member')
         else:
-            raise serializers.ValidationError("you are not owner of this board.")
+            raise serializers.ValidationError("You are not the owner of this board.")
+
 
 
