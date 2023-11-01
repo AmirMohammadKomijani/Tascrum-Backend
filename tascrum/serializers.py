@@ -313,11 +313,19 @@ class CardAssignSerializer(serializers.ModelSerializer):
 
 
 #### invite member to board
-
+class MemberFindUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['profimage']
 class FindUserSerializer(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id','username','email']
+        fields = ['id','username','first_name','last_name','email','member']
+    
+    def get_member(self,obj):
+        members = obj.users.all()
+        return MemberFindUserSerializer(members, many=True).data
 
 class AddMemberSerializer(serializers.ModelSerializer):
     class Meta:
