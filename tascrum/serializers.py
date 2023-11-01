@@ -361,7 +361,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
         board_role = MemberBoardRole.objects.filter(member=owner, board=board).first()
 
         if board_role.role == "owner":
-                MemberBoardRole.objects.create(member=new_members, board=board, role='member')
+                return MemberBoardRole.objects.create(member=new_members, board=board, role='member')
         else:
             raise serializers.ValidationError("You are not the owner of this board.")
 
