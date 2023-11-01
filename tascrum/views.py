@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models.aggregates import Count
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
@@ -141,7 +141,7 @@ class CardAssignmentView(ModelViewSet):
 ### invite member
 
 class FindUserView(ModelViewSet):
-    queryset = User.objects.all()
+    # queryset = User.objects.all()
     serializer_class = FindUserSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
@@ -150,9 +150,19 @@ class FindUserView(ModelViewSet):
     # def get_serializer_context(self):
     #     return {'user_id':self.request.user.id}
 
-    # def get_queryset(self):
-    #     member_id = Member.objects.get(user_id = self.request.user.id)
-    #     return MemberBoardRole.objects.filter(member=member_id)
+    def get_queryset(self):
+        # queryset = User.objects.all()
+        # member_id = Member.objects.get(user_id = self.request.user.id)
+        board_id = self.request.query_params.get('board')
+        members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
+        members = members_in_board.values_list('member__user_id', flat=True)
+        return User.objects.exclude(id__in = members).all()
+        
+        # return User.objects.filter(Q(id__in = members_bo))
+        # members_in_board = board.members.all()
+        # queryset = queryset.exclude(Q(users__in=members_in_board) | Q(member__in=members_in_board))
+        # return queryset
+
 
 class InviteMemberView(ModelViewSet):
     serializer_class = AddMemberSerializer
@@ -164,6 +174,28 @@ class InviteMemberView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberBoardRole.objects.filter(member=member_id)
+
+    
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+
+    #     board_id = serializer.validated_data['board']
+    #     owner = Member.objects.get(user_id=self.request.user.id)
+
+    #     # Check if the owner has the role of "owner" for the board
+    #     board_role = MemberBoardRole.objects.filter(member=owner, board=board_id).first()
+        
+    #     if board_role and board_role.role == "owner":
+    #         for member_id in serializer.validated_data['member']:
+    #             # Check if the member is already part of this board
+    #             # if not MemberBoardRole.objects.filter(member=member_id, board=board_id).exists():
+    #             MemberBoardRole.objects.create(member=member_id, board=board_id, role='member')
+    #         #     else:
+    #         #         return Response({"detail": f"Member {member_id} is already part of this board."}, status=status.HTTP_400_BAD_REQUEST)
+    #         # return Response({"detail": "Members have been added to the board."}, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response({"detail": "You are not the owner of this board."}, status=status.HTTP_403_FORBIDDEN)
 
 
 
