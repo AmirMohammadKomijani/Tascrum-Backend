@@ -10,7 +10,7 @@ from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
-                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer
+                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.models import User
@@ -73,6 +73,15 @@ class CreateBoardView(ModelViewSet):
 
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members = member_id)
+
+
+class BoardMembersView(ModelViewSet):
+    serializer_class = BoardMembersSerializer
+    permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)

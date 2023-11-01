@@ -36,6 +36,7 @@ class Workspace(models.Model):
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
     members = models.ManyToManyField(Member, through='MemberWorkspaceRole', related_name='wmembers')
+    backgroundImage = models.ImageField(null=True, upload_to='images/')
 
 
 class MemberWorkspaceRole(models.Model):
