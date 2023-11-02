@@ -78,7 +78,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title']
+        fields = ['id','title','backgroundImage']
 
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
