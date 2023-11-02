@@ -348,17 +348,17 @@ class MemberAddSerializer(serializers.ModelSerializer):
         fields = ['id']
 
 class AddMemberSerializer(serializers.ModelSerializer):
-    member = serializers.ListField(child=serializers.IntegerField())
+    # member = serializers.ListField(child=serializers.IntegerField())
 
     class Meta:
         model = MemberBoardRole
         fields = ['member', 'board']
 
-    def to_internal_value(self, data):
-        member_ids = data.get('member', [])
-        validated_data = super().to_internal_value(data)
-        validated_data['member'] = member_ids
-        return validated_data
+    # def to_internal_value(self, data):
+    #     member_ids = data.get('member', [])
+    #     validated_data = super().to_internal_value(data)
+    #     validated_data['member'] = member_ids
+    #     return validated_data
 
     def create(self, validated_data):
         owner = Member.objects.get(user_id=self.context['user_id'])
