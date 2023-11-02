@@ -79,6 +79,7 @@ class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id','title','backgroundImage']
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['backgroundImage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundImage']
@@ -326,10 +327,11 @@ class MemberFindUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['profimage']
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     representation['profimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['profimage']
-    #     return representation
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['profimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['profimage']
+        return representation
 class FindUserSerializer(serializers.ModelSerializer):
     member = serializers.SerializerMethodField()
     class Meta:
