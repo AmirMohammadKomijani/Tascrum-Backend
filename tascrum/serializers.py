@@ -353,7 +353,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MemberBoardRole
-        fields = ['member', 'board']
+        fields = ['id','member', 'board']
 
     # def to_internal_value(self, data):
     #     member_ids = data.get('member', [])
