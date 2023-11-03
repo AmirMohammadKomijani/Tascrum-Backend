@@ -6,6 +6,8 @@ from rest_framework import status
 from Auth.models import User
 from django.db import IntegrityError
 
+##tests are here
+
 class AuthTest(APITestCase, SimpleTestCase):
 
     def setUp(self):
