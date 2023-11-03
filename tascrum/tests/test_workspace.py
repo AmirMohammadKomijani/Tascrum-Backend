@@ -3,7 +3,9 @@ from django.urls import reverse,resolve
 from tascrum.views import WorkspaceView
 from tascrum.models import Workspace
 from Auth.models import User
-from rest_framework.authtoken.models import Token  # Import Token model if using token-based authentication
+from rest_framework import status
+
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
@@ -31,29 +33,36 @@ class TestViews(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        # self.user = User.objects.create(username='testuser', password='testpassword')
-        # self.token = Token.objects.create(user=self.user)
-        # self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
         self.workspace_url = reverse('workspace-list')
-    
-    def create_authenticated_client(self):
-        # Create a user and obtain an authentication token
-        user = User.objects.create(username='testuser', password='testpassword')
-        token, created = Token.objects.get_or_create(user=user)
 
-        # Create an authenticated client with the token
-        client = Client()
-        client.defaults(HTTP_AUTHORIZATION=f'Token {token.key}')
-        return client
-    
-    def test_workspace_list_GET(self):
+    def authenticate(self):
+        # register_data = {
+        #     'username': 'username',
+        #     'email': 'email@gmail.com',
+        #     'password': 'password',
+        # }
+        # response = self.client.post(reverse('djoser:user-list'), register_data)
+
+        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_data = {
+            'email': 'email@gmail.com',
+            'password': 'password',
+        }
+        response = self.client.post(reverse('token_obtain_pair'), login_data)
+        token = response.data.get('access', None)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
+
+    def test_workspace_list_GET_authenticated(self):
+        self.authenticate()
         response = self.client.get(self.workspace_url)
-        self.assertEquals(response.status_code,200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 class TestUrls(APITestCase):
 
     def test_workspace_is_resolved(self):
-        # Use the namespace to reverse the URL
         url = reverse('workspace-list')
         self.assertEquals(resolve(url).func.cls, WorkspaceView)
 
