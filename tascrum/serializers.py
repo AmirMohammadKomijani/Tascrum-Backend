@@ -375,7 +375,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
 
 
 
-class BurndownChartSerializer(serializers.ModelSerializer):
+class CreateBurndownChartSerializer(serializers.ModelSerializer):
     class Meta:
         model = BurndownChart
         fields = ['id', 'user', 'date', 'done', 'estimate']
