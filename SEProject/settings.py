@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'django_filters',
     'rest_framework_simplejwt',
     "Auth",
     "tascrum",
@@ -193,6 +194,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR , 'static'),
-)
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR , 'static'),
+# )
