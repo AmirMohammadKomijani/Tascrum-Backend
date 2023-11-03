@@ -283,7 +283,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
@@ -353,7 +353,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MemberBoardRole
-        fields = ['member', 'board']
+        fields = ['id','member', 'board']
 
     # def to_internal_value(self, data):
     #     member_ids = data.get('member', [])
