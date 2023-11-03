@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -295,6 +295,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
     class Meta:
@@ -372,4 +373,20 @@ class AddMemberSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You are not the owner of this board.")
 
 
+
+
+class BurndownChartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BurndownChart
+        fields = ['id', 'user', 'date', 'done', 'estimate']
+
+    def create(self, validated_data):
+        return BurndownChart.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.date = validated_data.get('date', instance.date)
+        instance.done = validated_data.get('done', instance.done)
+        instance.estimate = validated_data.get('estimate', instance.estimate)
+        instance.save()
+        return instance
 
