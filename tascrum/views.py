@@ -228,5 +228,4 @@ class CreateBurndownChartView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return BurndownChart.objects.filter(members = member_id)
+        return BurndownChart.objects.filter(user = self.request.user.id)
