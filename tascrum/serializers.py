@@ -283,7 +283,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
