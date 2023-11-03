@@ -27,36 +27,42 @@ class TestModels(TestCase):
     def test_list_board(self):
         self.assertEqual(self.list1.board, self.board)
 
-class TestViews(TestCase):
+class TestViews(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.List_url = reverse('List-list')
+        self.List_url = reverse('list-list')
 
     def authenticate(self):
-        # register_data = {
-        #     'username': 'username',
-        #     'email': 'email@gmail.com',
-        #     'password': 'password',
-        # }
-        # response = self.client.post(reverse('djoser:user-list'), register_data)
-
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        login_data = {
-            'email': 'email@gmail.com',
-            'password': 'password',
+        register_data = {
+            'first_name':'test fname',
+            'last_name':'test lname',
+            'username': 'test username',
+            'email': 'fortest@gmail.com',
+            'password': 'Somepass',
         }
-        response = self.client.post(reverse('token_obtain_pair'), login_data)
-        token = response.data.get('access', None)
+        response = self.client.post(reverse('user-list'), register_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # User login
+        login_data = {
+            'email': 'fortest@gmail.com',
+            'password': 'Somepass',
+        }
+        response = self.client.post(reverse('jwt-create'), login_data)
+
+        self.assertTrue(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["access"] is not None)
+
+        token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
 
     def test_List_list_GET_authenticated(self):
         self.authenticate()
         response = self.client.get(self.List_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 
 class TestUrls(APITestCase):
 
