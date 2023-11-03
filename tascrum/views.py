@@ -11,9 +11,9 @@ from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer
+                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
@@ -217,3 +217,15 @@ class HomeAccountView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
+
+
+### burndown chart
+
+class CreateBurndownChartView(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        return BurndownChart.objects.filter(user = self.request.user.id)
