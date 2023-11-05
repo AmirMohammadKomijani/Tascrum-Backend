@@ -135,7 +135,7 @@ class BoardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
         model = Member
-        fields = ['id','user']
+        fields = ['id','user','profimage']
 
 
 class BoardMembersSerializer(serializers.ModelSerializer):
