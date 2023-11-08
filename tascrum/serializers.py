@@ -223,7 +223,7 @@ class CardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members','startdate','duedate','reminder']
+        fields = ['id','title','list','role','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -234,7 +234,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','startdate','duedate', 'reminder']
+        fields = ['id','title','list','role','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
