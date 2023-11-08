@@ -36,7 +36,7 @@ class Workspace(models.Model):
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
     members = models.ManyToManyField(Member, through='MemberWorkspaceRole', related_name='wmembers')
-    backgroundImage = models.ImageField(null=True, upload_to='images/')
+    backgroundImage = models.ImageField(upload_to='images/',null=True,default='default_profile.png')
 
 
 class MemberWorkspaceRole(models.Model):
@@ -49,7 +49,7 @@ class Board(models.Model):
     title = models.CharField(max_length=255,null=False)
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
-    backgroundImage = models.ImageField(null=True, upload_to='images/')
+    backgroundImage = models.ImageField(upload_to='images/',null=True,default='default_profile.png')
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
