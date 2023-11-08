@@ -4,8 +4,6 @@ from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
 
-
-
 ### Profile feature
 class MemberProfileSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
@@ -261,7 +259,7 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members','startdate','duedate','reminder']
+        fields = ['id','title','list','role','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
 
 def get_role(self, obj):
@@ -273,7 +271,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','startdate','duedate', 'reminder']
+        fields = ['id','title','list','role','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()

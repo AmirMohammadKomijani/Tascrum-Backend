@@ -67,6 +67,8 @@ class Card(models.Model):
     members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
     startdate = models.DateTimeField(null=True)
     duedate = models.DateTimeField(null=True)
+    storypoint = models.IntegerField(default=0)
+    setestimate = models.IntegerField(default=0)
     reminder_choice =(
     ('At time of due date','At time of due date'),
     ('5 Minuets before','5 Minuets before'),
@@ -78,7 +80,7 @@ class Card(models.Model):
     ('2 Days before','2 Days before'),
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
-    
+
 class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
