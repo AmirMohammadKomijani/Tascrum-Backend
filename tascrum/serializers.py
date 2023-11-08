@@ -2,6 +2,8 @@
 from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole
 from Auth.serializers import UserProfileSerializer
+from Auth.models import User
+from django.utils import timezone
 
 
 ### Profile feature
@@ -241,7 +243,7 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members']
+        fields = ['id','title','list','role','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -252,7 +254,8 @@ class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role']
+        fields = ['id','title','list','role','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
+
 
     def get_role(self, obj):
         roles = obj.crole.all()
