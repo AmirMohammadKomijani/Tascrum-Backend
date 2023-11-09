@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart,Item,Checklist
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -259,19 +259,19 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
+        fields = ['id','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
-
-def get_role(self, obj):
+    def get_role(self, obj):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
-    
+
+
 ## create card
 class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','role','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
+        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -293,6 +293,53 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+## Checklist in card
+class CreateItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'content', 'checked', 'checklist']
+    
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        item = Item.objects.create(**validated_data)        
+        return item
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('content', instance.content)
+        instance.checked = validated_data.get('checked', instance.checked)
+        instance.save()
+        return instance
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'content', 'checked']
+
+class ChecklistSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    class Meta:
+        model = Checklist
+        fields = ['id', 'title', 'items']
+    
+    def get_items(self, obj):
+        items = obj.ichecklist.all()
+        return ItemSerializer(items, many=True).data
+
+class CreateChecklistSerializer(serializers.ModelSerializer):
+    # items = ItemSerializer(many=True)
+    class Meta:
+        model = Checklist
+        fields = ['id', 'title', 'card']
+    
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        checklist = Checklist.objects.create(**validated_data)        
+        return checklist
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
 
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):

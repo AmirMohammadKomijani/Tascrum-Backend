@@ -81,6 +81,15 @@ class Card(models.Model):
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
 
+class Checklist(models.Model):
+    title = models.CharField(max_length=60, null=True)
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='chcard')
+
+class Item(models.Model):
+    content = models.CharField(max_length=255, null=True)
+    checked = models.BooleanField(default=False)
+    checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='ichecklist')
+
 class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')

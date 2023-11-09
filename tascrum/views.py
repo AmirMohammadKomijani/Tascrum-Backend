@@ -11,9 +11,10 @@ from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer
+                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer,ChecklistSerializer, CreateChecklistSerializer,CreateItemSerializer,\
+                            ItemSerializer
 from rest_framework.viewsets import ModelViewSet
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart,Checklist,Item
 from Auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
@@ -145,6 +146,48 @@ class CardAssignmentView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberCardRole.objects.filter(member=member_id)
+
+# Checklist in card view
+class CreateItemView(ModelViewSet):
+    serializer_class = CreateItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = Card.objects.filter(members = member_id)
+        checklist_id = Checklist.objects.filter(card__in= card_id)
+        return Item.objects.filter(checklist__in=checklist_id)
+
+class ItemlistView(ModelViewSet):
+    serializer_class = ChecklistSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = Card.objects.filter(members = member_id)
+        return Checklist.objects.filter(card__in=card_id)
+
+class ChecklistView(ModelViewSet):
+    serializer_class = ChecklistSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = Card.objects.filter(members = member_id)
+        return Checklist.objects.filter(card__in=card_id)
+
+class CreateChecklistView(ModelViewSet):
+    serializer_class = CreateChecklistSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = Card.objects.filter(members = member_id)
+        return Checklist.objects.filter(card__in=card_id)
 
 
 ### invite member
