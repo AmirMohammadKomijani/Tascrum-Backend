@@ -70,13 +70,11 @@ class Card(models.Model):
     setestimate = models.IntegerField(default=0)
     reminder_choice =(
     ('At time of due date','At time of due date'),
-    ('5 Minuets before','5 Minuets before'),
-    ('10 Minuets before','10 Minuets before'),
-    ('15 Minuets before','15 Minuets before'),
-    ('1 Hour before','1 Hour before'),
-    ('2 Hour before','2 Hour before'),
     ('1 Day before','1 Day before'),
-    ('2 Days before','2 Days before'),
+    ('2 Day before','2 Day before'),
+    ('3 Day before','3 Day before'),
+    ('5 Days before','5 Days before'),
+    ('None','None'),
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
 class MemberCardRole(models.Model):
