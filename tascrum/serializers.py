@@ -290,6 +290,8 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.startdate = validated_data.get('startdate' , instance.startdate)
         instance.duedate = validated_data.get('duedate' , instance.duedate)
         instance.reminder = validated_data.get('reminder', instance.reminder)
+        instance.storypoint = validated_data.get('storypoint', instance.storypoint)
+        instance.setestimate = validated_data.get('setestimate', instance.setestimate)
         instance.save()
         return instance
 
