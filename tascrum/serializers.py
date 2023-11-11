@@ -159,7 +159,7 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','workspace','list']
+        fields = ['id','title','backgroundImage','workspace','list', 'lastseen']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -264,7 +264,6 @@ class CardSerializer(serializers.ModelSerializer):
     def get_role(self, obj):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
-
 
 ## create card
 class CreateCardSerializer(serializers.ModelSerializer):

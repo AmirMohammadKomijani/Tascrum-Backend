@@ -50,7 +50,7 @@ class Board(models.Model):
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
     backgroundImage = models.ImageField(upload_to='images/',default='default_profile.png')
-
+    lastseen = models.DateTimeField(auto_now=True)
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')

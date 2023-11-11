@@ -13,7 +13,7 @@ from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
 from rest_framework.permissions import IsAuthenticated
-
+from datetime import datetime
 
 # Create your views here.
 
@@ -64,7 +64,14 @@ class BoardView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        for instance in queryset:
+            instance.lastseen = datetime.now()
+            instance.save()
 
+        return super(BoardView, self).list(request, *args, **kwargs)
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
