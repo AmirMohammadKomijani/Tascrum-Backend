@@ -160,15 +160,6 @@ class CreateItemView(ModelViewSet):
         checklist_id = Checklist.objects.filter(card__in= card_id)
         return Item.objects.filter(checklist__in=checklist_id)
 
-class ItemlistView(ModelViewSet):
-    serializer_class = ChecklistSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members = member_id)
-        return Checklist.objects.filter(card__in=card_id)
-
 class ChecklistView(ModelViewSet):
     serializer_class = ChecklistSerializer
     permission_classes = [IsAuthenticated]
