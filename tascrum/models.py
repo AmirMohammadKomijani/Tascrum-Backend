@@ -84,3 +84,11 @@ class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
     role = models.CharField(max_length=50,default='member')
+
+
+class BurndownChart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='burndown_charts')
+    date = models.DateField(null=False)
+    done = models.IntegerField(default=0)
+    estimate = models.IntegerField(default=0)
+
