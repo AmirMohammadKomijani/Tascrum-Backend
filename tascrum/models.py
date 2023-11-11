@@ -50,6 +50,7 @@ class Board(models.Model):
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
     backgroundImage = models.ImageField(null=True, upload_to='images/')
+    has_star = models.BooleanField(default=False)
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
