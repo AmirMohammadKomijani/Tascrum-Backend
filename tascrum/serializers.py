@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart,Item,Checklist
+from .models import *
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -328,7 +328,6 @@ class ChecklistSerializer(serializers.ModelSerializer):
         return ItemSerializer(items, many=True).data
 
 class CreateChecklistSerializer(serializers.ModelSerializer):
-    # items = ItemSerializer(many=True)
     class Meta:
         model = Checklist
         fields = ['id', 'title', 'card']
@@ -342,6 +341,28 @@ class CreateChecklistSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get('title', instance.title)
         instance.save()
         return instance
+
+## Lables in card
+class CreateLabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'board']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        label = Lable.objects.create(**validated_data)        
+        return label
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.color = validated_data.get('color', instance.color)
+        instance.save()
+        return instance
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'board']
 
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):

@@ -88,6 +88,11 @@ class Item(models.Model):
     checked = models.BooleanField(default=False)
     checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='ichecklist')
 
+class Lable(models.Model):
+    color = models.CharField(max_length=30, null=False)
+    title = models.CharField(max_length=30, null=True)
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='blable')
+
 class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
