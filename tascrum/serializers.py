@@ -321,7 +321,7 @@ class ChecklistSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
     class Meta:
         model = Checklist
-        fields = ['id', 'title', 'items']
+        fields = ['id', 'title', 'items', 'card']
     
     def get_items(self, obj):
         items = obj.ichecklist.all()
