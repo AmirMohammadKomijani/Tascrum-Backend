@@ -65,13 +65,20 @@ class BoardView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
     
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        for instance in queryset:
-            instance.lastseen = datetime.now()
-            instance.save()
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     for instance in queryset:
+    #         instance.lastseen = datetime.now()
+    #         instance.save()
 
-        return super(BoardView, self).list(request, *args, **kwargs)
+    #     return super(BoardView, self).list(request, *args, **kwargs)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.lastseen = datetime.now()
+        instance.save()
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
@@ -100,6 +107,14 @@ class BoardMembersView(ModelViewSet):
         return Board.objects.filter(members = member_id)
 
 
+class BoardRecentlyViewedView(ModelViewSet):
+    serializer_class = BoardRecentlyViewed
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members = member_id).order_by('-lastseen')[:3]
+        
 ### List view
 class ListView(ModelViewSet):
     serializer_class = ListSerializer

@@ -159,7 +159,7 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','workspace','list', 'lastseen']
+        fields = ['id','title','backgroundImage','workspace','list','lastseen']
 
     def get_role(self, obj):
         roles = obj.brole.all()
@@ -199,6 +199,12 @@ class BoardBackgroundImageSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id','backgroundImage']
 
+class BoardRecentlyViewed(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'backgroundImage']
+
+    
 ### List serializers
 class ListBoardSerializer(serializers.ModelSerializer):
     class Meta:
