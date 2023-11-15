@@ -384,6 +384,16 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Lable
         fields = ['id', 'title', 'color', 'board']
 
+class LabelBoardSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self,obj):
+        label = obj.blable.all()
+        return LabelSerializer(label,many=True).data
+    
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
     class Meta:

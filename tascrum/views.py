@@ -13,7 +13,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
                             BoardBackgroundImageSerializer,BoardStarSerializer,\
                             BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer,CardChecklistsSerializer
+                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -265,6 +265,14 @@ class LabelView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         board_id = Board.objects.filter(members = member_id)
         return Lable.objects.filter(board__in=board_id)
+
+class LabelBoardView(ModelViewSet):
+    serializer_class = LabelBoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members=member)
 
 ### invite member
 
