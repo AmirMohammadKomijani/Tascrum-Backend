@@ -77,7 +77,12 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title']
+        fields = ['id','title','backgroundImage']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['backgroundImage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundImage']
+        return representation
 
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
