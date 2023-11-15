@@ -77,7 +77,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage']
+        fields = ['id','title','backgroundImage','has_star']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
