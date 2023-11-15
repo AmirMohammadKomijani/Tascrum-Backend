@@ -83,7 +83,7 @@ class Card(models.Model):
     order = models.IntegerField(null=True,auto_created=True)
     class Meta:
         ordering = ('order',)
-        unique_together = ('list', 'order',)
+        # unique_together = ('list', 'order',)
     
     def save(self, *args, **kwargs):
         if not self.order:

@@ -3,6 +3,7 @@ from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,L
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
+from django.db.models import F
 
 ### Profile feature
 class MemberProfileSerializer(serializers.ModelSerializer):
@@ -439,10 +440,41 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
     class Meta:
         model=Card
         fields = ['id','list','order']
-    
+
+
     def update(self, instance, validated_data):
-        instance.order = validated_data.get('order', instance.order)
+        new_order = validated_data.get('order', instance.order)
+        if new_order < instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
+            for card in cards:
+                card.order += 1
+                card.save()
+        elif new_order > instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte=instance.order,order__lte=new_order).exclude(id = instance.id)
+            for card in cards:
+                card.order -= 1
+                card.save()
+        instance.order = new_order
         instance.save()
         return instance
 
+
+    # def update(self, instance, validated_data):
+    #     new_order = validated_data.get('order', instance.order)
+    #     current_order = instance.order
+    #     target_list = instance.list
+
+    #     # Update the order of the current instance
+    #     instance.order = new_order
+
+    #     # Update the order of cards after changing the order of the current instance
+    #     if new_order < current_order:
+    #         # Move cards down in order
+    #         Card.objects.filter(list=target_list, order__gt=new_order, order__lte=current_order).exclude(id=instance.id).update(order=F('order') + 1)
+    #     elif new_order > current_order:
+    #         # Move cards up in order
+    #         Card.objects.filter(list=target_list, order__lt=new_order, order__gte=current_order).exclude(id=instance.id).update(order=F('order') - 1)
+    #     instance.save()
+
+    #     return instance
 
