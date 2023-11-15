@@ -15,6 +15,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.models import User
+# from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -82,6 +83,17 @@ class CreateBoardView(ModelViewSet):
 
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
+    
+    # def perform_create(self, serializer):
+    #     board = serializer.save()
+        
+    #     # Generate the invitation link
+    #     invitation_link = generate_invitation_link()
+        
+    #     # Assign the invitation link to the board
+    #     board.invitation_link = invitation_link
+    #     board.save()
+
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
@@ -95,12 +107,24 @@ class BoardMembersView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
     
-class BoardStartView(ModelViewSet):
+class BoardStarView(ModelViewSet):
     serializer_class = BoardStarSerializer
     
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members=member_id, has_star=True)
+    
+class BoardStarUpdate(ModelViewSet):
+    queryset = Board.objects.all()
+    serializer_class = BoardStarSerializer
+
+    @action(detail=True, methods=['put'])
+    def update_star(self, request, pk=None):
+        board = self.get_object()
+        serializer = self.get_serializer(board, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 ### List view
