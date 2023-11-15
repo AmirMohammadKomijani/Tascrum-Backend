@@ -8,14 +8,11 @@ from rest_framework.response import Response
 # from django_filters import DjangoFilterBackend
 from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
-<<<<<<< HEAD
-from .serializers import *
-=======
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer,BoardStarSerializer
->>>>>>> board
+                            BoardBackgroundImageSerializer,BoardStarSerializer,\
+                            BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -331,11 +328,11 @@ class HomeAccountView(ModelViewSet):
 
 ### burndown chart
 
-class CreateBurndownChartView(ModelViewSet):
-    serializer_class = CreateBurndownChartSerializer
-    permission_classes = [IsAuthenticated]
+# class CreateBurndownChartView(ModelViewSet):
+#     serializer_class = CreateBurndownChartSerializer
+#     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        return BurndownChart.objects.filter(user = self.request.user.id)
+#     def get_serializer_context(self):
+#         return {'user_id':self.request.user.id}
+#     def get_queryset(self):
+#         return BurndownChart.objects.filter(user = self.request.user.id)

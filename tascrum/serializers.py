@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import *
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -76,12 +76,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['backgroundImage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundImage']
-        return representation
+        fields = ['id','title']
 
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
@@ -133,7 +128,7 @@ class BoardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
         model = Member
-        fields = ['id','user','profimage']
+        fields = ['id','user']
 
 
 class BoardMembersSerializer(serializers.ModelSerializer):
@@ -159,11 +154,11 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','workspace','list','lastseen']
+        fields = ['id','title','backgroundImage','workspace','list','lastseen','has_star']
 
-    def get_role(self, obj):
-        roles = obj.brole.all()
-        return BoardRoleSerializer(roles, many=True).data
+    # def get_role(self, obj):
+    #     roles = obj.brole.all()
+    #     return BoardRoleSerializer(roles, many=True).data
     def get_list(self, obj):
         list = obj.lboard.all()
         return BoardListSerializer(list, many=True).data
@@ -203,8 +198,16 @@ class BoardRecentlyViewed(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id', 'title', 'backgroundImage']
+class BoardStarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','has_star','members']
 
-    
+    def update(self, instance, validated_data):
+        instance.has_star = validated_data.get('has_star', instance.has_star)
+        instance.save()
+        return instance
+
 ### List serializers
 class ListBoardSerializer(serializers.ModelSerializer):
     class Meta:
@@ -401,11 +404,6 @@ class MemberFindUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['profimage']
-        
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['profimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['profimage']
-        return representation
 class FindUserSerializer(serializers.ModelSerializer):
     member = serializers.SerializerMethodField()
     class Meta:
@@ -416,50 +414,22 @@ class FindUserSerializer(serializers.ModelSerializer):
         members = obj.users.all()
         return MemberFindUserSerializer(members, many=True).data
 
-class MemberAddSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = ['id']
-
 class AddMemberSerializer(serializers.ModelSerializer):
-    # member = serializers.ListField(child=serializers.IntegerField())
-
     class Meta:
         model = MemberBoardRole
-        fields = ['id','member', 'board']
-
-    # def to_internal_value(self, data):
-    #     member_ids = data.get('member', [])
-    #     validated_data = super().to_internal_value(data)
-    #     validated_data['member'] = member_ids
-    #     return validated_data
-
+        fields = ['member','board']
+    
     def create(self, validated_data):
-        owner = Member.objects.get(user_id=self.context['user_id'])
+        owner = Member.objects.get(user_id = self.context['user_id'])
         board = validated_data.get('board')
-        new_members = validated_data.get('member')
-        board_role = MemberBoardRole.objects.filter(member=owner, board=board).first()
-
+        newMember = validated_data.get('member')
+        board_role = MemberBoardRole.objects.filter(member = owner,board=board).first()
         if board_role.role == "owner":
-                return MemberBoardRole.objects.create(member=new_members, board=board, role='member')
+            if not MemberBoardRole.objects.filter(member = newMember,board=board).exists(): 
+                return MemberBoardRole.objects.create(member = newMember,board=board,role='member')
+            else:
+                raise serializers.ValidationError("this member is part of this board already.")
         else:
-            raise serializers.ValidationError("You are not the owner of this board.")
+            raise serializers.ValidationError("you are not owner of this board.")
 
-
-
-
-class CreateBurndownChartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BurndownChart
-        fields = ['id', 'user', 'date', 'done', 'estimate']
-
-    def create(self, validated_data):
-        return BurndownChart.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.date = validated_data.get('date', instance.date)
-        instance.done = validated_data.get('done', instance.done)
-        instance.estimate = validated_data.get('estimate', instance.estimate)
-        instance.save()
-        return instance
 
