@@ -444,6 +444,7 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         new_order = validated_data.get('order', instance.order)
+        instance.list = validated_data.get('list', instance.list)
         if new_order < instance.order:
             cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
             for card in cards:
