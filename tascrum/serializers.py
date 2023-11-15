@@ -196,6 +196,16 @@ class BoardBackgroundImageSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id','backgroundImage']
 
+class BoardStarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','has_star','members']
+
+    def update(self, instance, validated_data):
+        instance.has_star = validated_data.get('has_star', instance.has_star)
+        instance.save()
+        return instance
+
 ### List serializers
 class ListBoardSerializer(serializers.ModelSerializer):
     class Meta:

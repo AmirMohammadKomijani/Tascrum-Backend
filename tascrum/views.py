@@ -11,7 +11,7 @@ from rest_framework import status
 from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer
+                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer,BoardStarSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.models import User
@@ -88,12 +88,19 @@ class CreateBoardView(ModelViewSet):
 
 
 class BoardMembersView(ModelViewSet):
-    serializer_class = BoardMembersSerializer
+    serializer_class = BoardStarSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
+    
+class BoardStartView(ModelViewSet):
+    serializer_class = BoardStarSerializer
+    
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members=member_id, has_star=True)
 
 
 ### List view
