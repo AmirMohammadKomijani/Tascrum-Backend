@@ -8,10 +8,18 @@ from rest_framework.response import Response
 # from django_filters import DjangoFilterBackend
 from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
+<<<<<<< HEAD
 from .serializers import *
+=======
+from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
+                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
+                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
+                            BoardBackgroundImageSerializer,CreateBurndownChartSerializer,BoardStarSerializer
+>>>>>>> board
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
+# from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 
@@ -93,18 +101,48 @@ class CreateBoardView(ModelViewSet):
 
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
+    
+    # def perform_create(self, serializer):
+    #     board = serializer.save()
+        
+    #     # Generate the invitation link
+    #     invitation_link = generate_invitation_link()
+        
+    #     # Assign the invitation link to the board
+    #     board.invitation_link = invitation_link
+    #     board.save()
+
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
 
 
 class BoardMembersView(ModelViewSet):
-    serializer_class = BoardMembersSerializer
+    serializer_class = BoardStarSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
+    
+class BoardStarView(ModelViewSet):
+    serializer_class = BoardStarSerializer
+    
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members=member_id, has_star=True)
+    
+class BoardStarUpdate(ModelViewSet):
+    queryset = Board.objects.all()
+    serializer_class = BoardStarSerializer
+
+    @action(detail=True, methods=['put'])
+    def update_star(self, request, pk=None):
+        board = self.get_object()
+        serializer = self.get_serializer(board, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class BoardRecentlyViewedView(ModelViewSet):
