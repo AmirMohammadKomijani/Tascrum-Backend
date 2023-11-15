@@ -330,11 +330,22 @@ class ChecklistSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
     class Meta:
         model = Checklist
-        fields = ['id', 'title', 'items', 'card']
+        fields = ['id', 'title', 'items']
     
     def get_items(self, obj):
         items = obj.ichecklist.all()
         return ItemSerializer(items, many=True).data
+
+class CardChecklistsSerializer(serializers.ModelSerializer):
+    checklists = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = ['id','checklists']
+    
+    def get_checklists(self,obj):
+        checklist = obj.chcard.all()
+        return ChecklistSerializer(checklist,many=True).data
 
 class CreateChecklistSerializer(serializers.ModelSerializer):
     class Meta:

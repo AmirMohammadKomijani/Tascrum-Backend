@@ -13,7 +13,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
                             BoardBackgroundImageSerializer,BoardStarSerializer,\
                             BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer
+                                Internal_DnDSerializer,CardChecklistsSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -226,6 +226,13 @@ class ChecklistView(ModelViewSet):
         # member_id = Member.objects.get(user_id = self.request.user.id)
         card_id = self.kwargs.get('pk')
         return Checklist.objects.filter(card__in=card_id)
+
+class CardChecklistView(ModelViewSet):
+    serializer_class = CardChecklistsSerializer
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Card.objects.filter(members=member)
 
 class CreateChecklistView(ModelViewSet):
     serializer_class = CreateChecklistSerializer
