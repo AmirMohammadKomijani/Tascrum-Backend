@@ -218,8 +218,8 @@ class ChecklistView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members = member_id)
+        # member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = self.kwargs.get('pk')
         return Checklist.objects.filter(card__in=card_id)
 
 class CreateChecklistView(ModelViewSet):
