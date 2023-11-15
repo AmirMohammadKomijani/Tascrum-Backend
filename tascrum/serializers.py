@@ -203,7 +203,7 @@ class BoardBackgroundImageSerializer(serializers.ModelSerializer):
 class BoardRecentlyViewed(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id', 'title', 'backgroundImage']
+        fields = ['id', 'title', 'backgroundImage','has_star']
 class BoardStarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
