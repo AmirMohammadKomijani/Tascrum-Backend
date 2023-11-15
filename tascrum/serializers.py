@@ -201,7 +201,7 @@ class BoardRecentlyViewed(serializers.ModelSerializer):
 class BoardStarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','has_star','members']
+        fields = ['id','has_star']
 
     def update(self, instance, validated_data):
         instance.has_star = validated_data.get('has_star', instance.has_star)

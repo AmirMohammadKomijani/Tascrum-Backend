@@ -130,16 +130,20 @@ class BoardStarView(ModelViewSet):
         return Board.objects.filter(members=member_id, has_star=True)
     
 class BoardStarUpdate(ModelViewSet):
-    queryset = Board.objects.all()
+    # queryset = Board.objects.all()
     serializer_class = BoardStarSerializer
 
-    @action(detail=True, methods=['put'])
-    def update_star(self, request, pk=None):
-        board = self.get_object()
-        serializer = self.get_serializer(board, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Board.objects.filter(members = member)
+
+    # @action(detail=True, methods=['put'])
+    # def update_star(self, request, pk=None):
+    #     board = self.get_object()
+    #     serializer = self.get_serializer(board, data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data)
 
 
 class BoardRecentlyViewedView(ModelViewSet):
