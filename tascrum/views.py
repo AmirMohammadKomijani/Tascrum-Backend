@@ -12,7 +12,8 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
                         CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
                             BoardBackgroundImageSerializer,BoardStarSerializer,\
-                            BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer
+                            BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
+                                Internal_DnDSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -340,3 +341,13 @@ class HomeAccountView(ModelViewSet):
 #         return {'user_id':self.request.user.id}
 #     def get_queryset(self):
 #         return BurndownChart.objects.filter(user = self.request.user.id)
+
+
+### Drag and Drop
+
+class Internal_DndView(ModelViewSet):
+    serializer_class = Internal_DnDSerializer
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Card.objects.filter(members = member)

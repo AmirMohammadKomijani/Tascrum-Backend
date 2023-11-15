@@ -32,6 +32,7 @@ router.register('invite',views.InviteMemberView,basename='invite')
 router.register('user-search',views.FindUserView,basename='user-search')
 router.register('home',views.HomeAccountView,basename='home')
 router.register('change',views.ChangePasswordView,basename='change')
+router.register('dnd',views.Internal_DndView,basename='dnd')
 # router.register('burndown',views.CreateBurndownChartView,basename='burndown')
 # router.register('test',views.WorkspaceRoleView,basename='test')
 

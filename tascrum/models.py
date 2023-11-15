@@ -80,6 +80,20 @@ class Card(models.Model):
     ('None','None'),
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
+    order = models.IntegerField(null=True,auto_created=True)
+    class Meta:
+        ordering = ('order',)
+        unique_together = ('list', 'order',)
+    
+    def save(self, *args, **kwargs):
+        if not self.order:
+            max_order_in_list = Card.objects.filter(list=self.list).aggregate(models.Max('order'))['order__max']
+            if max_order_in_list is not None:
+                self.order = max_order_in_list + 1
+            else:
+                self.order = 1
+        super().save(*args, **kwargs)
+
 
 class Checklist(models.Model):
     title = models.CharField(max_length=60, null=True)

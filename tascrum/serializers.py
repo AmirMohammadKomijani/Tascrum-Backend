@@ -433,3 +433,16 @@ class AddMemberSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("you are not owner of this board.")
 
 
+### Drag and Drop
+
+class Internal_DnDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Card
+        fields = ['id','list','order']
+    
+    def update(self, instance, validated_data):
+        instance.order = validated_data.get('order', instance.order)
+        instance.save()
+        return instance
+
+
