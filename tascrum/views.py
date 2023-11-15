@@ -13,7 +13,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
                             BoardBackgroundImageSerializer,BoardStarSerializer,\
                             BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer
+                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer,CreateBoardStarSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -132,7 +132,7 @@ class BoardStarView(ModelViewSet):
     
 class BoardStarUpdate(ModelViewSet):
     # queryset = Board.objects.all()
-    serializer_class = BoardStarSerializer
+    serializer_class = CreateBoardStarSerializer
 
     def get_queryset(self):
         member = Member.objects.get(user_id = self.request.user.id)
