@@ -36,7 +36,7 @@ class Workspace(models.Model):
     type = models.CharField(max_length=20,choices=workspace_choice)
     description = models.TextField(null=True)
     members = models.ManyToManyField(Member, through='MemberWorkspaceRole', related_name='wmembers')
-    backgroundImage = models.ImageField(null=True, upload_to='images/')
+    backgroundImage = models.ImageField(upload_to='images/',default='default_profile.png')
 
 
 class MemberWorkspaceRole(models.Model):
@@ -49,9 +49,10 @@ class Board(models.Model):
     title = models.CharField(max_length=255,null=False)
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
-    backgroundImage = models.ImageField(null=True, upload_to='images/')
     has_star = models.BooleanField(default=False)
     invitation_link = models.CharField(max_length=255, null=True, blank=True)
+    backgroundImage = models.ImageField(upload_to='images/',default='default_profile.png')
+    lastseen = models.DateTimeField(auto_now=True, null=True)
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
@@ -69,18 +70,46 @@ class Card(models.Model):
     members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
     startdate = models.DateTimeField(null=True)
     duedate = models.DateTimeField(null=True)
+    storypoint = models.IntegerField(default=0)
+    setestimate = models.IntegerField(default=0)
     reminder_choice =(
     ('At time of due date','At time of due date'),
-    ('5 Minuets before','5 Minuets before'),
-    ('10 Minuets before','10 Minuets before'),
-    ('15 Minuets before','15 Minuets before'),
-    ('1 Hour before','1 Hour before'),
-    ('2 Hour before','2 Hour before'),
     ('1 Day before','1 Day before'),
-    ('2 Days before','2 Days before'),
+    ('2 Day before','2 Day before'),
+    ('3 Day before','3 Day before'),
+    ('5 Days before','5 Days before'),
+    ('None','None'),
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
+    order = models.IntegerField(null=True,auto_created=True)
+    class Meta:
+        ordering = ('order',)
+        # unique_together = ('list', 'order',)
     
+    def save(self, *args, **kwargs):
+        if not self.order:
+            max_order_in_list = Card.objects.filter(list=self.list).aggregate(models.Max('order'))['order__max']
+            if max_order_in_list is not None:
+                self.order = max_order_in_list + 1
+            else:
+                self.order = 1
+        super().save(*args, **kwargs)
+
+
+class Checklist(models.Model):
+    title = models.CharField(max_length=60, null=True)
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='chcard')
+
+class Item(models.Model):
+    content = models.CharField(max_length=255, null=True)
+    checked = models.BooleanField(default=False)
+    checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='ichecklist')
+
+class Lable(models.Model):
+    color = models.CharField(max_length=30, null=False)
+    title = models.CharField(max_length=30, null=True)
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='blable')
+
 class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
