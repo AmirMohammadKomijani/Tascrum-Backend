@@ -51,7 +51,7 @@ class Board(models.Model):
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
     backgroundImage = models.ImageField(null=True, upload_to='images/')
     has_star = models.BooleanField(default=False)
-    # invitation_link = models.CharField(max_length=255, null=True, blank=True)
+    invitation_link = models.CharField(max_length=255, null=True, blank=True)
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')

@@ -15,7 +15,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
 from rest_framework.viewsets import ModelViewSet
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
 from Auth.models import User
-# from .utils import generate_invitation_link
+from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -84,15 +84,15 @@ class CreateBoardView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     
-    # def perform_create(self, serializer):
-    #     board = serializer.save()
+    def perform_create(self, serializer):
+        board = serializer.save()
         
-    #     # Generate the invitation link
-    #     invitation_link = generate_invitation_link()
+        # Generate the invitation link
+        invitation_link = generate_invitation_link()
         
-    #     # Assign the invitation link to the board
-    #     board.invitation_link = invitation_link
-    #     board.save()
+        # Assign the invitation link to the board
+        board.invitation_link = invitation_link
+        board.save()
 
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
@@ -125,6 +125,20 @@ class BoardStarUpdate(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+    
+class BoardInvitationLinkView(ModelViewSet):
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer
+
+    def get_invitation_link(self, request):
+        # Get the board ID from the request.
+        board_id = request.GET.get('board_id')
+
+        # Get the invitation link for the board.
+        invitation_link = Board.objects.get(id=board_id).invitation_link
+
+        # Return the invitation link to the frontend.
+        return HttpResponse(invitation_link)
 
 
 ### List view
