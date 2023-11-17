@@ -1,11 +1,9 @@
-from django.test import SimpleTestCase,TestCase,Client
+from django.test import TestCase
 from django.urls import reverse,resolve
 from tascrum.views import ListView
-from tascrum.models import List,Board,Workspace
+from tascrum.models import List,Board,Workspace,Member
 from Auth.models import User
 from rest_framework import status
-
-from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
@@ -70,3 +68,24 @@ class TestUrls(APITestCase):
         url = reverse('list-list')
         self.assertEquals(resolve(url).func.cls, ListView)
 
+
+class CreateListViewsTest(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        user1 = User.objects.create_user(first_name='saba', last_name='razi',email='razi1.saba@gmail.com',\
+                                          username= "test username", password='thisissaba')
+        self.members = Member.objects.create(
+            user= user1,
+            occupations='Employee',
+            bio='Another test bio',
+            birthdate='1990-05-15'
+        )
+        self.workspace = Workspace.objects.create(name = 'workspace test2',type = 'small business', description = 'description test', backgroundImage = '')
+        self.board = Board.objects.create(
+            title='board test',
+            backgroundImage = "",
+            workspace=self.workspace
+        )
+        self.board.members.add(self.members)
+        self.list = List.objects.create(title='List test', board=self.board)
