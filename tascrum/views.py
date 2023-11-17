@@ -100,15 +100,15 @@ class CreateBoardView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
     
-    # def perform_create(self, serializer):
-    #     board = serializer.save()
+    def perform_create(self, serializer):
+        board = serializer.save()
         
-    #     # Generate the invitation link
-    #     invitation_link = generate_invitation_link()
+        # Generate the invitation link
+        invitation_link = generate_invitation_link()
         
-    #     # Assign the invitation link to the board
-    #     board.invitation_link = invitation_link
-    #     board.save()
+        # Assign the invitation link to the board
+        board.invitation_link = invitation_link
+        board.save()
 
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
