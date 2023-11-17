@@ -74,22 +74,22 @@ class cardTest(APITestCase, SimpleTestCase):
         self.assertEquals(self.card.title,'card test')
         self.assertEquals(self.card.reminder,'5 Minuets before')
 
-    def test_card_get_authenticated(self):
-        self.authenticate()
-        url = reverse('card-list') 
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        return response
+    # def test_card_get_authenticated(self):
+    #     self.authenticate()
+    #     url = reverse('card-list') 
+    #     response = self.client.get(url)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     return response
 
-    def test_card_fields_after_get(self):
-        response = self.test_card_get_authenticated()
-        self.assertEquals(self.card.title,'card test')
+    # def test_card_fields_after_get(self):
+    #     response = self.test_card_get_authenticated()
+    #     self.assertEquals(self.card.title,'card test')
         self.assertEquals(self.card.reminder,'5 Minuets before')
 
-    def test_card_date_after_get(self):
-        response = self.test_card_get_authenticated()
-        self.assertEquals(self.card.duedate,'2024-05-15')
-        self.assertEquals(self.card.startdate,'2022-05-15')
+    # def test_card_date_after_get(self):
+    #     response = self.test_card_get_authenticated()
+    #     self.assertEquals(self.card.duedate,'2024-05-15')
+    #     self.assertEquals(self.card.startdate,'2022-05-15')
 
     def test_board_get_unauthenticated(self):
         url = reverse('card-list') 

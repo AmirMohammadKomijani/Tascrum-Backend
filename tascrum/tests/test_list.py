@@ -204,25 +204,3 @@ class TestUrls(APITestCase):
     def test_Create_List_is_resolved(self):
         url = reverse('crlist-list')
         self.assertEquals(resolve(url).func.cls,CreateListView)
-
-
-# class CreateListViewsTest(APITestCase):
-
-#     def setUp(self):
-#         self.client = APIClient()
-#         user1 = User.objects.create_user(first_name='saba', last_name='razi',email='razi1.saba@gmail.com',\
-#                                           username= "test username", password='thisissaba')
-#         self.members = Member.objects.create(
-#             user= user1,
-#             occupations='Employee',
-#             bio='Another test bio',
-#             birthdate='1990-05-15'
-#         )
-#         self.workspace = Workspace.objects.create(name = 'workspace test2',type = 'small business', description = 'description test', backgroundImage = '')
-#         self.board = Board.objects.create(
-#             title='board test',
-#             backgroundImage = "",
-#             workspace=self.workspace
-#         )
-#         self.board.members.add(self.members)
-#         self.list = List.objects.create(title='List test', board=self.board)
