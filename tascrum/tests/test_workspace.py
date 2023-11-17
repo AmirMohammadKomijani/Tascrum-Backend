@@ -63,6 +63,62 @@ class TestViews(TestCase):
         response = self.client.get(self.workspace_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+class TestCreateWorkspaceView(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.workspace_url = reverse('crworkspace-list')
+
+    def authenticate(self):
+        register_data = {
+            'first_name':'test fname',
+            'last_name':'test lname',
+            'username': 'test username',
+            'email': 'fortest@gmail.com',
+            'password': 'Somepass',
+        }
+        response = self.client.post(reverse('user-list'), register_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # User login
+        login_data = {
+            'email': 'fortest@gmail.com',
+            'password': 'Somepass',
+        }
+        response = self.client.post(reverse('jwt-create'), login_data)
+
+        self.assertTrue(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["access"] is not None)
+
+        token = response.data["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
+    def test_Create_Workspace_POST(self):
+        # Authenticate the user
+        self.authenticate()
+
+        create_workspace_data = {
+            'name': 'workspace test2',
+            'type': 'small business',
+            'description': 'description test',
+        }
+
+        # Send a POST request to create a new workspace
+        response = self.client.post(self.workspace_url, create_workspace_data, format='json')
+        print(response.content)
+
+        # Check if the response status code is 201 (Created)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Optionally, you can check the response data for additional details
+        self.assertEqual(response.data['name'], 'workspace test2')
+        self.assertEqual(response.data['type'], 'small business')
+        self.assertEqual(response.data['description'], 'description test')
+
+        # Optionally, you can check if the new workspace is actually created in the database
+        new_workspace = Workspace.objects.get(name='workspace test2', type='small business', description='description test')
+        self.assertIsNotNone(new_workspace)
+
+
 class TestUrls(APITestCase):
 
     def test_workspace_is_resolved(self):
