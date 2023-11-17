@@ -168,13 +168,18 @@ class BoardSerializer(serializers.ModelSerializer):
     def get_list(self, obj):
         list = obj.lboard.all()
         return BoardListSerializer(list, many=True).data
+
+class BoardInviteLink(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','invitation_link']
     
 
 class CreateBoardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','workspace','backgroundImage']
+        fields = ['id','title','workspace','backgroundImage','invitation_link']
 
     def get_role(self, obj):
         roles = obj.brole.all()
