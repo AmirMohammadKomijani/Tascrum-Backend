@@ -121,3 +121,13 @@ class BurndownChart(models.Model):
     done = models.IntegerField(default=0)
     estimate = models.IntegerField(default=0)
 
+
+class Survey(models.Model):
+    title = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    questions = models.ManyToManyField('Question')
+
+class Question(models.Model):
+    text = models.CharField(max_length=255)
+    type = models.CharField(max_length=255)
+
