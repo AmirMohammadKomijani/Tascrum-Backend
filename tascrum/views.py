@@ -154,6 +154,21 @@ class BoardRecentlyViewedView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id).order_by('-lastseen')[:3]
+    
+
+class BoardInvitationLinkView(ModelViewSet):
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer
+
+    def get_invitation_link(self, request):
+        # Get the board ID from the request.
+        board_id = request.GET.get('board_id')
+
+        # Get the invitation link for the board.
+        invitation_link = Board.objects.get(id=board_id).invitation_link
+
+        # Return the invitation link to the frontend.
+        return HttpResponse(invitation_link)
         
 ### List view
 class ListView(ModelViewSet):
