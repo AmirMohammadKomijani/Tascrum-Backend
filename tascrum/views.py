@@ -13,7 +13,7 @@ from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,Me
                             CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
                             BoardBackgroundImageSerializer,BoardStarSerializer,\
                             BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer
+                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer,BoardInviteLink
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -144,7 +144,7 @@ class BoardStarUpdate(ModelViewSet):
     
 class BoardInvitationLinkView(ModelViewSet):
     queryset = Board.objects.all()
-    serializer_class = BoardSerializer
+    serializer_class = BoardInviteLink
 
     def get_invitation_link(self, request):
         # Get the board ID from the request.
