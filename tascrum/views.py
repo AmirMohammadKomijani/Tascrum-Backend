@@ -183,8 +183,10 @@ class CardView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Card.objects.filter(members = member_id)
+        # member_id = Member.objects.get(user_id = self.request.user.id)
+        board_id = self.request.query_params.get('board')
+        list_id = List.objects.filter(board__in = board_id)
+        return Card.objects.filter(list__in=list_id)
 
 class CreateCardView(ModelViewSet):
     serializer_class = CreateCardSerializer
@@ -196,7 +198,7 @@ class CreateCardView(ModelViewSet):
         return Card.objects.filter(members = member_id)
 
 class CardAssignmentView(ModelViewSet):
-    queryset = MemberCardRole.objects.all()
+    # queryset = MemberCardRole.objects.all()
     serializer_class = CardAssignSerializer
     permission_classes = [IsAuthenticated]
     # allowed_methods = ('GET','DELETE','POST','HEAD','OPTIONS')
@@ -205,9 +207,9 @@ class CardAssignmentView(ModelViewSet):
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
 
-    # def get_queryset(self):
-    #     member_id = Member.objects.get(user_id = self.request.user.id)
-    #     return MemberCardRole.objects.filter(member=member_id)
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return MemberCardRole.objects.filter(member=member_id)
 
 
 ## Checklist in card view

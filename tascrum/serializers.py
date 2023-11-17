@@ -263,9 +263,14 @@ class CreateListSerializer(serializers.ModelSerializer):
 ###### Card Serializer
 class CardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = ['id','user']
+    
+    # def get_role(self, obj):
+    #     roles = obj.cmember.all()
+    #     return CardRoleSerializer(roles, many=True).data
 
 class CardListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -281,10 +286,10 @@ class CardRoleSerializer(serializers.ModelSerializer):
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate']
+        fields = ['id','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -305,7 +310,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
