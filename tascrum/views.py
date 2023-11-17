@@ -1,19 +1,8 @@
-from django.shortcuts import render
-from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from rest_framework.decorators import api_view
 from rest_framework.decorators import action
 from rest_framework.response import Response
-# from django_filters import DjangoFilterBackend
-from rest_framework.filters import SearchFilter,OrderingFilter
-from rest_framework import status
-from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
-                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
-                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer,BoardStarSerializer,\
-                            BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer,BoardInviteLink,CreateBoardStarSerializer
+from rest_framework.filters import SearchFilter
+from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -62,6 +51,7 @@ class CreateWorkspaceView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
+
 ### board view
 class BoardView(ModelViewSet):
     serializer_class = BoardSerializer
@@ -71,13 +61,6 @@ class BoardView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
     
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.filter_queryset(self.get_queryset())
-    #     for instance in queryset:
-    #         instance.lastseen = datetime.now()
-    #         instance.save()
-
-    #     return super(BoardView, self).list(request, *args, **kwargs)
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.lastseen = datetime.now()
@@ -102,11 +85,7 @@ class CreateBoardView(ModelViewSet):
     
     def perform_create(self, serializer):
         board = serializer.save()
-        
-        # Generate the invitation link
         invitation_link = generate_invitation_link()
-        
-        # Assign the invitation link to the board
         board.invitation_link = invitation_link
         board.save()
 
@@ -131,7 +110,6 @@ class BoardStarView(ModelViewSet):
         return Board.objects.filter(members=member_id, has_star=True)
     
 class BoardStarUpdate(ModelViewSet):
-    # queryset = Board.objects.all()
     serializer_class = CreateBoardStarSerializer
 
     @action(detail=True, methods=['put'])
@@ -147,30 +125,10 @@ class BoardInvitationLinkView(ModelViewSet):
     serializer_class = BoardInviteLink
 
     def get_invitation_link(self, request):
-        # Get the board ID from the request.
         board_id = request.GET.get('board_id')
-
-        # Get the invitation link for the board.
         invitation_link = Board.objects.get(id=board_id).invitation_link
-
-        # Return the invitation link to the frontend.
         return HttpResponse(invitation_link)
     
-
-
-    # def get_queryset(self):
-    #     member = Member.objects.get(user_id = self.request.user.id)
-    #     return Board.objects.filter(members = member)
-
-    # @action(detail=True, methods=['put'])
-    # def update_star(self, request, pk=None):
-    #     board = self.get_object()
-    #     serializer = self.get_serializer(board, data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response(serializer.data)
-
-
 class BoardRecentlyViewedView(ModelViewSet):
     serializer_class = BoardRecentlyViewed
     permission_classes = [IsAuthenticated]
@@ -207,7 +165,6 @@ class CardView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # member_id = Member.objects.get(user_id = self.request.user.id)
         board_id = self.request.query_params.get('board')
         list_id = List.objects.filter(board__in = board_id)
         return Card.objects.filter(list__in=list_id)
@@ -225,15 +182,10 @@ class CardAssignmentView(ModelViewSet):
     queryset = MemberCardRole.objects.all()
     serializer_class = CardAssignSerializer
     permission_classes = [IsAuthenticated]
-    # allowed_methods = ('GET','DELETE','POST','HEAD','OPTIONS')
 
 
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
-
-    # def get_queryset(self):
-    #     member_id = Member.objects.get(user_id = self.request.user.id)
-    #     return MemberCardRole.objects.filter(member=member_id)
 
 
 ## Checklist in card view
@@ -254,7 +206,6 @@ class ChecklistView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # member_id = Member.objects.get(user_id = self.request.user.id)
         card_id = self.kwargs.get('pk')
         return Checklist.objects.filter(card__in=card_id)
 
@@ -308,27 +259,16 @@ class LabelBoardView(ModelViewSet):
 ### invite member
 
 class FindUserView(ModelViewSet):
-    # queryset = User.objects.all()
     serializer_class = FindUserSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['username','email']
 
-    # def get_serializer_context(self):
-    #     return {'user_id':self.request.user.id}
-
     def get_queryset(self):
-        # queryset = User.objects.all()
-        # member_id = Member.objects.get(user_id = self.request.user.id)
         board_id = self.request.query_params.get('board')
         members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
         members = members_in_board.values_list('member__user_id', flat=True)
         return User.objects.exclude(id__in = members).all()
-        
-        # return User.objects.filter(Q(id__in = members_bo))
-        # members_in_board = board.members.all()
-        # queryset = queryset.exclude(Q(users__in=members_in_board) | Q(member__in=members_in_board))
-        # return queryset
 
 
 class InviteMemberView(ModelViewSet):
@@ -342,27 +282,6 @@ class InviteMemberView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberBoardRole.objects.filter(member=member_id)
 
-    
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-
-    #     board_id = serializer.validated_data['board']
-    #     owner = Member.objects.get(user_id=self.request.user.id)
-
-    #     # Check if the owner has the role of "owner" for the board
-    #     board_role = MemberBoardRole.objects.filter(member=owner, board=board_id).first()
-        
-    #     if board_role and board_role.role == "owner":
-    #         for member_id in serializer.validated_data['member']:
-    #             # Check if the member is already part of this board
-    #             # if not MemberBoardRole.objects.filter(member=member_id, board=board_id).exists():
-    #             MemberBoardRole.objects.create(member=member_id, board=board_id, role='member')
-    #         #     else:
-    #         #         return Response({"detail": f"Member {member_id} is already part of this board."}, status=status.HTTP_400_BAD_REQUEST)
-    #         # return Response({"detail": "Members have been added to the board."}, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response({"detail": "You are not the owner of this board."}, status=status.HTTP_403_FORBIDDEN)
 
 
 
@@ -375,19 +294,6 @@ class HomeAccountView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Member.objects.filter(user_id = self.request.user.id)
-
-
-### burndown chart
-
-# class CreateBurndownChartView(ModelViewSet):
-#     serializer_class = CreateBurndownChartSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def get_serializer_context(self):
-#         return {'user_id':self.request.user.id}
-#     def get_queryset(self):
-#         return BurndownChart.objects.filter(user = self.request.user.id)
-
 
 ### Drag and Drop
 
