@@ -1,10 +1,9 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,BurndownChart
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
-
-
+from django.db.models import F
 
 ### Profile feature
 class MemberProfileSerializer(serializers.ModelSerializer):
@@ -78,8 +77,8 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage']
-
+        fields = ['id','title','backgroundImage','has_star']
+    
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['backgroundImage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundImage']
@@ -135,7 +134,7 @@ class BoardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     class Meta:
         model = Member
-        fields = ['id','user','profimage']
+        fields = ['id','user']
 
 
 class BoardMembersSerializer(serializers.ModelSerializer):
@@ -161,11 +160,11 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','workspace','list']
+        fields = ['id','title','backgroundImage','workspace','list','lastseen','has_star']
 
-    def get_role(self, obj):
-        roles = obj.brole.all()
-        return BoardRoleSerializer(roles, many=True).data
+    # def get_role(self, obj):
+    #     roles = obj.brole.all()
+    #     return BoardRoleSerializer(roles, many=True).data
     def get_list(self, obj):
         list = obj.lboard.all()
         return BoardListSerializer(list, many=True).data
@@ -200,6 +199,30 @@ class BoardBackgroundImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id','backgroundImage']
+
+class BoardRecentlyViewed(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'backgroundImage','has_star']
+class BoardStarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','title','backgroundImage','has_star']
+
+    # def update(self, instance, validated_data):
+    #     instance.has_star = validated_data.get('has_star', instance.has_star)
+    #     instance.save()
+    #     return instance
+
+class CreateBoardStarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = ['id','has_star']
+
+    def update(self, instance, validated_data):
+        instance.has_star = validated_data.get('has_star', instance.has_star)
+        instance.save()
+        return instance
 
 ### List serializers
 class ListBoardSerializer(serializers.ModelSerializer):
@@ -240,9 +263,14 @@ class CreateListSerializer(serializers.ModelSerializer):
 ###### Card Serializer
 class CardMemberSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = ['id','user']
+    
+    # def get_role(self, obj):
+    #     roles = obj.cmember.all()
+    #     return CardRoleSerializer(roles, many=True).data
 
 class CardListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -258,22 +286,21 @@ class CardRoleSerializer(serializers.ModelSerializer):
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    # role = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members','startdate','duedate','reminder']
+        fields = ['id','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
-
-def get_role(self, obj):
+    def get_role(self, obj):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
-    
+
 ## create card
 class CreateCardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','startdate','duedate', 'reminder']
+        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -283,7 +310,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         member = Member.objects.get(user_id = self.context['user_id'])
         validated_data['duedate'] = timezone.now()
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(member=member, card=card, role="assigned")
+        # MemberCardRole.objects.create(member=member, card=card, role="assigned")
 
         return card
     
@@ -292,10 +319,101 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.startdate = validated_data.get('startdate' , instance.startdate)
         instance.duedate = validated_data.get('duedate' , instance.duedate)
         instance.reminder = validated_data.get('reminder', instance.reminder)
+        instance.storypoint = validated_data.get('storypoint', instance.storypoint)
+        instance.setestimate = validated_data.get('setestimate', instance.setestimate)
         instance.save()
         return instance
 
+## Checklist in card
+class CreateItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'content', 'checked', 'checklist']
+    
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        item = Item.objects.create(**validated_data)        
+        return item
 
+    def update(self, instance, validated_data):
+        instance.content = validated_data.get('content', instance.content)
+        instance.checked = validated_data.get('checked', instance.checked)
+        instance.save()
+        return instance
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'content', 'checked']
+
+class ChecklistSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    class Meta:
+        model = Checklist
+        fields = ['id', 'title', 'items']
+    
+    def get_items(self, obj):
+        items = obj.ichecklist.all()
+        return ItemSerializer(items, many=True).data
+
+class CardChecklistsSerializer(serializers.ModelSerializer):
+    checklists = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = ['id','checklists']
+    
+    def get_checklists(self,obj):
+        checklist = obj.chcard.all()
+        return ChecklistSerializer(checklist,many=True).data
+
+class CreateChecklistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Checklist
+        fields = ['id', 'title', 'card']
+    
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        checklist = Checklist.objects.create(**validated_data)        
+        return checklist
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
+
+## Lables in card
+class CreateLabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'board']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        label = Lable.objects.create(**validated_data)        
+        return label
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.color = validated_data.get('color', instance.color)
+        instance.save()
+        return instance
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'board']
+
+class LabelBoardSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self,obj):
+        label = obj.blable.all()
+        return LabelSerializer(label,many=True).data
+    
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
     class Meta:
@@ -328,11 +446,6 @@ class MemberFindUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['profimage']
-        
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['profimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['profimage']
-        return representation
 class FindUserSerializer(serializers.ModelSerializer):
     member = serializers.SerializerMethodField()
     class Meta:
@@ -343,50 +456,67 @@ class FindUserSerializer(serializers.ModelSerializer):
         members = obj.users.all()
         return MemberFindUserSerializer(members, many=True).data
 
-class MemberAddSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = ['id']
-
 class AddMemberSerializer(serializers.ModelSerializer):
-    # member = serializers.ListField(child=serializers.IntegerField())
-
     class Meta:
         model = MemberBoardRole
-        fields = ['id','member', 'board']
-
-    # def to_internal_value(self, data):
-    #     member_ids = data.get('member', [])
-    #     validated_data = super().to_internal_value(data)
-    #     validated_data['member'] = member_ids
-    #     return validated_data
-
+        fields = ['member','board']
+    
     def create(self, validated_data):
-        owner = Member.objects.get(user_id=self.context['user_id'])
+        owner = Member.objects.get(user_id = self.context['user_id'])
         board = validated_data.get('board')
-        new_members = validated_data.get('member')
-        board_role = MemberBoardRole.objects.filter(member=owner, board=board).first()
-
+        newMember = validated_data.get('member')
+        board_role = MemberBoardRole.objects.filter(member = owner,board=board).first()
         if board_role.role == "owner":
-                return MemberBoardRole.objects.create(member=new_members, board=board, role='member')
+            if not MemberBoardRole.objects.filter(member = newMember,board=board).exists(): 
+                return MemberBoardRole.objects.create(member = newMember,board=board,role='member')
+            else:
+                raise serializers.ValidationError("this member is part of this board already.")
         else:
-            raise serializers.ValidationError("You are not the owner of this board.")
+            raise serializers.ValidationError("you are not owner of this board.")
 
 
+### Drag and Drop
 
-
-class CreateBurndownChartSerializer(serializers.ModelSerializer):
+class Internal_DnDSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BurndownChart
-        fields = ['id', 'user', 'date', 'done', 'estimate']
+        model=Card
+        fields = ['id','list','order']
 
-    def create(self, validated_data):
-        return BurndownChart.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.date = validated_data.get('date', instance.date)
-        instance.done = validated_data.get('done', instance.done)
-        instance.estimate = validated_data.get('estimate', instance.estimate)
+        new_order = validated_data.get('order', instance.order)
+        instance.list = validated_data.get('list', instance.list)
+        if new_order < instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
+            for card in cards:
+                card.order += 1
+                card.save()
+        elif new_order > instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte=instance.order,order__lte=new_order).exclude(id = instance.id)
+            for card in cards:
+                card.order -= 1
+                card.save()
+        instance.order = new_order
         instance.save()
         return instance
+
+
+    # def update(self, instance, validated_data):
+    #     new_order = validated_data.get('order', instance.order)
+    #     current_order = instance.order
+    #     target_list = instance.list
+
+    #     # Update the order of the current instance
+    #     instance.order = new_order
+
+    #     # Update the order of cards after changing the order of the current instance
+    #     if new_order < current_order:
+    #         # Move cards down in order
+    #         Card.objects.filter(list=target_list, order__gt=new_order, order__lte=current_order).exclude(id=instance.id).update(order=F('order') + 1)
+    #     elif new_order > current_order:
+    #         # Move cards up in order
+    #         Card.objects.filter(list=target_list, order__lt=new_order, order__gte=current_order).exclude(id=instance.id).update(order=F('order') - 1)
+    #     instance.save()
+
+    #     return instance
 

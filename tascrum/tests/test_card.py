@@ -43,7 +43,7 @@ class cardTest(APITestCase, SimpleTestCase):
             list=self.list,
             startdate='2022-05-15',
             duedate='2024-05-15',
-            reminder='5 Minuets before'
+            reminder='5 Minuets before',
         )
         self.card.members.add(self.members)
     
@@ -72,7 +72,6 @@ class cardTest(APITestCase, SimpleTestCase):
 
     def test_card_fields(self):
         self.assertEquals(self.card.title,'card test')
-        self.assertEquals(self.card.duedate,'2024-05-15')
         self.assertEquals(self.card.reminder,'5 Minuets before')
 
     def test_card_get_authenticated(self):
@@ -85,9 +84,13 @@ class cardTest(APITestCase, SimpleTestCase):
     def test_card_fields_after_get(self):
         response = self.test_card_get_authenticated()
         self.assertEquals(self.card.title,'card test')
-        self.assertEquals(self.card.duedate,'2024-05-15')
         self.assertEquals(self.card.reminder,'5 Minuets before')
-    
+
+    def test_card_date_after_get(self):
+        response = self.test_card_get_authenticated()
+        self.assertEquals(self.card.duedate,'2024-05-15')
+        self.assertEquals(self.card.startdate,'2022-05-15')
+
     def test_board_get_unauthenticated(self):
         url = reverse('card-list') 
         response = self.client.get(url)
@@ -148,3 +151,17 @@ class CreateCardViewTest(APITestCase, SimpleTestCase):
 
         token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
+    
+    def test_card_count(self):
+        self.authenticate()
+        card_data = {"title":"card test","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+        response = self.client.post(reverse('crcard-list') , card_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        card_data = {"title":"card test2","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+        response = self.client.post(reverse('crcard-list') , card_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        self.assertEqual(Card.objects.all().count(), 3)
+
+        self.assertEqual(Card.objects.filter(title='card test2').count(), 1)
