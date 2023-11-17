@@ -331,7 +331,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
         return item
 
     def update(self, instance, validated_data):
-        instance.title = validated_data.get('content', instance.content)
+        instance.content = validated_data.get('content', instance.content)
         instance.checked = validated_data.get('checked', instance.checked)
         instance.save()
         return instance
