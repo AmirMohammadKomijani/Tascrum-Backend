@@ -270,7 +270,6 @@ class FindUserView(ModelViewSet):
         members = members_in_board.values_list('member__user_id', flat=True)
         return User.objects.exclude(id__in = members).all()
 
-
 class InviteMemberView(ModelViewSet):
     serializer_class = AddMemberSerializer
     permission_classes = [IsAuthenticated]
@@ -281,10 +280,6 @@ class InviteMemberView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return MemberBoardRole.objects.filter(member=member_id)
-
-
-
-
 
 ### Home-Account view
 
