@@ -116,7 +116,7 @@ class CreateBoardView(ModelViewSet):
 
 
 class BoardMembersView(ModelViewSet):
-    serializer_class = BoardStarSerializer
+    serializer_class = BoardMembersSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
