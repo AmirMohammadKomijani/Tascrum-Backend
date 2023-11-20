@@ -46,6 +46,8 @@ router.register('crchecklist',views.CreateChecklistView,basename='crchecklist')
 router.register('critem',views.CreateItemView,basename='critem')
 router.register('label',views.LabelBoardView,basename='label')
 router.register('crlabel',views.CreateLabelView,basename='crlabel')
+router.register('board-labels',views.LabelBoardView,basename='board-labels')
+router.register('crcard-labels',views.LabelCardAssignView,basename='crcard-labels')
 router.register('assign',views.CardAssignmentView,basename='assign')
 router.register('dnd',views.Internal_DndView,basename='dnd')
 

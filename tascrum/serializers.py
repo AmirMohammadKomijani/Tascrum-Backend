@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,Survey
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -257,13 +257,19 @@ class CardRoleSerializer(serializers.ModelSerializer):
         model = MemberCardRole
         fields = ['id','role']
 
+class CardLabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id','title', 'color']
+
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    role = serializers.SerializerMethodField()
+    labels = CardLabelSerializer(many=True)
+    # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate']
+        fields = ['id','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate', 'labels']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -290,6 +296,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.setestimate = validated_data.get('setestimate', instance.setestimate)
         instance.save()
         return instance
+
 
 ## Checklist in card
 class CreateItemSerializer(serializers.ModelSerializer):
@@ -349,7 +356,7 @@ class CreateChecklistSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-## Lables in card
+## Lables in Board
 class CreateLabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lable
@@ -369,7 +376,7 @@ class CreateLabelSerializer(serializers.ModelSerializer):
 class LabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lable
-        fields = ['id', 'title', 'color', 'board']
+        fields = ['id', 'title', 'color']
 
 class LabelBoardSerializer(serializers.ModelSerializer):
     labels = serializers.SerializerMethodField()
@@ -377,9 +384,29 @@ class LabelBoardSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id', 'labels']
 
-    def get_labels(self,obj):
-        label = obj.blable.all()
-        return LabelSerializer(label,many=True).data
+    def get_labels(self, obj):
+        label = obj.boardl.all()
+        return LabelSerializer(label, many=True).data
+
+# assign Labels to cards
+class LabelCardAssignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CardLabel
+        fields = ['id', 'card', 'label']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        label_card = CardLabel.objects.create(**validated_data)        
+        return label_card
+
+# if mirza wants
+# class LabelCardSerializer(serializers.ModelSerializer):
+#     label = LabelSerializer()
+#     class Meta:
+#         model = CardLabel
+#         fields = ['id', 'card', 'label']
+
+  
     
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
