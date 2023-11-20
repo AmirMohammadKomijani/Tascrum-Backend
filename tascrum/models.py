@@ -86,7 +86,7 @@ class Card(models.Model):
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
     order = models.IntegerField(null=True,auto_created=True)
-    labels = models.ManyToManyField(Lable, through='CardLabel', related_name='clabels')
+    labels = models.ManyToManyField(Lable, through='CardLabel', related_name='clabel')
     class Meta:
         ordering = ('order',)
         # unique_together = ('list', 'order',)

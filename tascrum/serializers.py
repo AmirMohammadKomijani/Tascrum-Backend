@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel
+from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel,Survey
 from Auth.serializers import UserProfileSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -257,19 +257,13 @@ class CardRoleSerializer(serializers.ModelSerializer):
         model = MemberCardRole
         fields = ['id','role']
 
-class CardLabelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lable
-        fields = ['id','title', 'color']
-
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    labels = CardLabelSerializer(many=True)
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate', 'labels']
+        fields = ['id','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -399,12 +393,17 @@ class LabelCardAssignSerializer(serializers.ModelSerializer):
         label_card = CardLabel.objects.create(**validated_data)        
         return label_card
 
-# if mirza wants
-# class LabelCardSerializer(serializers.ModelSerializer):
-#     label = LabelSerializer()
-#     class Meta:
-#         model = CardLabel
-#         fields = ['id', 'card', 'label']
+
+class LabelCardSerializer(serializers.ModelSerializer):
+    # label = LabelSerializer()
+    class Meta:
+        model = Lable
+        # fields = ['id', 'label']
+        fields = "__all__"
+    # def get_items(self, obj):
+    #     items = obj.ichecklist.all()
+    #     breakpoint()
+    #     return ItemSerializer(items, many=True).data
 
   
     

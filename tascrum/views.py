@@ -11,6 +11,7 @@ from Auth.models import User
 from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -262,19 +263,18 @@ class LabelCardAssignView(ModelViewSet):
         card_id = Card.objects.filter(members=member_id)
         return CardLabel.objects.filter(card__in=card_id)
     
-
-# if mirza wants
-# class LabelCardView(ModelViewSet):
-#     serializer_class = LabelCardSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def get_queryset(self):
-#         board_id = self.kwargs.get('pk')
-#         return Board.objects.filter(id=board_id)
+class LabelCardView(ModelViewSet):
+    queryset = Lable.objects.all()
+    serializer_class = LabelCardSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def retrieve(self, request, pk=None):
+        queryset =  Lable.objects.filter(labelc__card = pk)
+        serializer = LabelCardSerializer(queryset , many=True)
+        return Response(serializer.data)
 
 
 ### invite member
-
 class FindUserView(ModelViewSet):
     serializer_class = FindUserSerializer
     permission_classes = [IsAuthenticated]
