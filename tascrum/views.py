@@ -8,12 +8,7 @@ from rest_framework.response import Response
 # from django_filters import DjangoFilterBackend
 from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
-from .serializers import MemberSerializer,WorkspaceSerializer,BoardSerializer,MemberProfileSerializer,CreateWorkspaceSerializer,\
-                        CreateBoardSerializer,CreateListSerializer,ListSerializer,CreateCardSerializer,CardSerializer,\
-                            CardAssignSerializer,ChangePasswordSerializer,AddMemberSerializer,FindUserSerializer,BoardMembersSerializer,\
-                            BoardBackgroundImageSerializer,BoardStarSerializer,\
-                            BoardRecentlyViewed,CreateItemSerializer,ChecklistSerializer,CreateChecklistSerializer,CreateLabelSerializer,LabelSerializer,\
-                                Internal_DnDSerializer,CardChecklistsSerializer, LabelBoardSerializer
+from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
@@ -245,7 +240,7 @@ class CreateChecklistView(ModelViewSet):
         card_id = Card.objects.filter(members = member_id)
         return Checklist.objects.filter(card__in=card_id)
 
-## Label in Card
+## Label in Board
 class CreateLabelView(ModelViewSet):
     serializer_class = CreateLabelSerializer
     permission_classes = [IsAuthenticated]
@@ -257,22 +252,37 @@ class CreateLabelView(ModelViewSet):
         board_id = Board.objects.filter(members = member_id)
         return Lable.objects.filter(board__in=board_id)
 
-class LabelView(ModelViewSet):
-    serializer_class = LabelSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        board_id = Board.objects.filter(members = member_id)
-        return Lable.objects.filter(board__in=board_id)
-
 class LabelBoardView(ModelViewSet):
     serializer_class = LabelBoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members=member)
+        board_id = self.kwargs.get('pk')
+        return Board.objects.filter(id=board_id)
+
+
+# assign Labels to card
+class LabelCardAssignView(ModelViewSet):
+    serializer_class = LabelCardAssignSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        card_id = Card.objects.filter(members=member_id)
+        return CardLabel.objects.filter(card__in=card_id)
+    
+
+# if mirza wants
+# class LabelCardView(ModelViewSet):
+#     serializer_class = LabelCardSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         board_id = self.kwargs.get('pk')
+#         return Board.objects.filter(id=board_id)
+
 
 ### invite member
 

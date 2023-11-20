@@ -53,6 +53,7 @@ class Board(models.Model):
     # invitation_link = models.CharField(max_length=255, null=True, blank=True)
     backgroundImage = models.ImageField(upload_to='images/',default='default_profile.png')
     lastseen = models.DateTimeField(auto_now=True, null=True)
+
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
@@ -62,6 +63,10 @@ class List(models.Model):
     title = models.CharField(max_length=255,null=False)
     board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')
 
+class Lable(models.Model):
+    color = models.CharField(max_length=30, null=False)
+    title = models.CharField(max_length=30, null=True)
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='boardl')
 
 class Card(models.Model):
     title = models.CharField(max_length=255,null=False)
@@ -81,6 +86,7 @@ class Card(models.Model):
     ) 
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
     order = models.IntegerField(null=True,auto_created=True)
+    labels = models.ManyToManyField(Lable, through='CardLabel', related_name='clabels')
     class Meta:
         ordering = ('order',)
         # unique_together = ('list', 'order',)
@@ -95,6 +101,10 @@ class Card(models.Model):
         super().save(*args, **kwargs)
 
 
+class CardLabel(models.Model):
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='cardl')
+    label = models.ForeignKey(Lable, on_delete=models.CASCADE, related_name='labelc')
+
 class Checklist(models.Model):
     title = models.CharField(max_length=60, null=True)
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='chcard')
@@ -103,11 +113,6 @@ class Item(models.Model):
     content = models.CharField(max_length=255, null=True)
     checked = models.BooleanField(default=False)
     checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='ichecklist')
-
-class Lable(models.Model):
-    color = models.CharField(max_length=30, null=False)
-    title = models.CharField(max_length=30, null=True)
-    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='blable')
 
 class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
