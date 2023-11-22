@@ -518,11 +518,6 @@ class ListTimelineSerializer(serializers.ModelSerializer):
         return ListBoardTimelineSerializer(lists, many=True).data
 
 #member
-# class CardMemberTimelineSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = MemberCardRole
-#         fields = ['id','card','member']
-    
 class MemberTimelineSerializer(serializers.ModelSerializer):
     user = UserTimelineSerializer()
     cards = serializers.SerializerMethodField()
@@ -531,7 +526,9 @@ class MemberTimelineSerializer(serializers.ModelSerializer):
         fields = ['id','user','profimage','cards']
         
     def get_cards(self, obj):
-        card_ids = obj.cmember.filter()
+        member_id = obj.id 
+        card_members = MemberCardRole.objects.filter(member_id=member_id)
+        card_ids = [card_member.card.id for card_member in card_members]
         cards = Card.objects.filter(id__in=card_ids)
         return CardsTimelineSerializer(cards, many=True).data
 
@@ -542,3 +539,24 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
         fields = ['id','members']
 
 #label
+class LabelTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'cards']
+
+    def get_cards(self, obj):
+        label_id = obj.id  
+        card_labels = CardLabel.objects.filter(label_id=label_id)
+        card_ids = [card_label.card.id for card_label in card_labels]
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+class LabelsTimelineSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self, obj):
+        label = obj.boardl.all()
+        return LabelTimelineSerializer(label, many=True).data

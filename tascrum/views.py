@@ -333,3 +333,11 @@ class MemberTimelineView(ModelViewSet):
     def get_queryset(self):
         board_id = self.kwargs.get('pk')
         return Board.objects.filter(id = board_id)
+
+class LabelTimelineView(ModelViewSet):
+    serializer_class = LabelsTimelineSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        board_id = self.kwargs.get('pk')
+        return Board.objects.filter(id = board_id)
