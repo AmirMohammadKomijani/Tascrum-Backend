@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel,Survey
-from Auth.serializers import UserProfileSerializer
+from Auth.serializers import UserProfileSerializer, UserTimelineSerializer
 from Auth.models import User
 from django.utils import timezone
 from django.db.models import F
@@ -490,3 +490,55 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = ('title', 'created_by', 'questions')
+
+
+## timeline
+#list
+class CardsTimelineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','title','startdate','duedate']
+class ListBoardTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = List
+        fields = ['id','title','cards']
+    
+    def get_cards(self, obj):
+        cards = obj.clist.all().order_by('startdate', 'duedate')
+        return CardsTimelineSerializer(cards, many=True).data
+class ListTimelineSerializer(serializers.ModelSerializer):
+    lists = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'lists']
+
+    def get_lists(self, obj):
+        lists = obj.lboard.all()
+        return ListBoardTimelineSerializer(lists, many=True).data
+
+#member
+# class CardMemberTimelineSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = MemberCardRole
+#         fields = ['id','card','member']
+    
+class MemberTimelineSerializer(serializers.ModelSerializer):
+    user = UserTimelineSerializer()
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Member
+        fields = ['id','user','profimage','cards']
+        
+    def get_cards(self, obj):
+        card_ids = obj.cmember.filter()
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+
+class MembersTimelineSerializer(serializers.ModelSerializer):
+    members = MemberTimelineSerializer(many=True)
+    class Meta:
+        model = Board
+        fields = ['id','members']
+
+#label

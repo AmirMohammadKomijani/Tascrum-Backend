@@ -315,3 +315,21 @@ class Internal_DndView(ModelViewSet):
     def get_queryset(self):
         member = Member.objects.get(user_id = self.request.user.id)
         return Card.objects.filter(members = member)
+
+
+### time line 
+class ListTimelineView(ModelViewSet):
+    serializer_class = ListTimelineSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        board_id = self.kwargs.get('pk')
+        return Board.objects.filter(id=board_id)
+
+class MemberTimelineView(ModelViewSet):
+    serializer_class = MembersTimelineSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        board_id = self.kwargs.get('pk')
+        return Board.objects.filter(id = board_id)
