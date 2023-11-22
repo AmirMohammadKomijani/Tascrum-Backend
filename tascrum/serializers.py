@@ -395,16 +395,9 @@ class LabelCardAssignSerializer(serializers.ModelSerializer):
 
 
 class LabelCardSerializer(serializers.ModelSerializer):
-    # label = LabelSerializer()
     class Meta:
         model = Lable
-        # fields = ['id', 'label']
         fields = "__all__"
-    # def get_items(self, obj):
-    #     items = obj.ichecklist.all()
-    #     breakpoint()
-    #     return ItemSerializer(items, many=True).data
-
   
     
 ## assign members to card
