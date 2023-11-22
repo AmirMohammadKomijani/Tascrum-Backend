@@ -560,3 +560,12 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
     def get_labels(self, obj):
         label = obj.boardl.all()
         return LabelTimelineSerializer(label, many=True).data
+
+
+
+### Calender
+
+class CalenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','startdate','duedate','reminder','storypoint','setestimate']
