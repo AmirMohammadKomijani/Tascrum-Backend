@@ -51,6 +51,10 @@ router.register('card-labels',views.LabelCardView,basename='card-labels')
 router.register('assign',views.CardAssignmentView,basename='assign')
 router.register('dnd',views.Internal_DndView,basename='dnd')
 
+### timeline urls
+router.register('list-tl',views.ListTimelineView,basename='list-tl')
+router.register('member-tl',views.MemberTimelineView,basename='member-tl')
+router.register('label-tl',views.LabelTimelineView,basename='label-tl')
 
 
 

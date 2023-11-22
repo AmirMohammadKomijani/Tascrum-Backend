@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel,Survey
-from Auth.serializers import UserProfileSerializer
+from Auth.serializers import UserProfileSerializer, UserTimelineSerializer
 from Auth.models import User
 from django.utils import timezone
 from django.db.models import F
@@ -490,3 +490,73 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = ('title', 'created_by', 'questions')
+
+
+## timeline
+#list
+class CardsTimelineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','title','startdate','duedate']
+class ListBoardTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = List
+        fields = ['id','title','cards']
+    
+    def get_cards(self, obj):
+        cards = obj.clist.all().order_by('startdate', 'duedate')
+        return CardsTimelineSerializer(cards, many=True).data
+class ListTimelineSerializer(serializers.ModelSerializer):
+    lists = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'lists']
+
+    def get_lists(self, obj):
+        lists = obj.lboard.all()
+        return ListBoardTimelineSerializer(lists, many=True).data
+
+#member
+class MemberTimelineSerializer(serializers.ModelSerializer):
+    user = UserTimelineSerializer()
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Member
+        fields = ['id','user','profimage','cards']
+        
+    def get_cards(self, obj):
+        member_id = obj.id 
+        card_members = MemberCardRole.objects.filter(member_id=member_id)
+        card_ids = [card_member.card.id for card_member in card_members]
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+
+class MembersTimelineSerializer(serializers.ModelSerializer):
+    members = MemberTimelineSerializer(many=True)
+    class Meta:
+        model = Board
+        fields = ['id','members']
+
+#label
+class LabelTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'cards']
+
+    def get_cards(self, obj):
+        label_id = obj.id  
+        card_labels = CardLabel.objects.filter(label_id=label_id)
+        card_ids = [card_label.card.id for card_label in card_labels]
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+class LabelsTimelineSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self, obj):
+        label = obj.boardl.all()
+        return LabelTimelineSerializer(label, many=True).data
