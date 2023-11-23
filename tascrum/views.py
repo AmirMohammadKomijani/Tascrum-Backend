@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from rest_framework.decorators import action
 from rest_framework.response import Response
-# from django_filters import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import *
@@ -341,3 +341,20 @@ class LabelTimelineView(ModelViewSet):
     def get_queryset(self):
         board_id = self.kwargs.get('pk')
         return Board.objects.filter(id = board_id)
+
+
+
+### Calender View
+
+class CalenderView(ModelViewSet):
+    serializer_class = CalenderSerializer
+    permission_classes = [IsAuthenticated]
+    # filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['startdate','duedate','reminder','storypoint','setestimate']
+
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(members = member)
+        lists = List.objects.filter(board__in = boards)
+        return Card.objects.filter(list__in=lists)

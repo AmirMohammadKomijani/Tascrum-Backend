@@ -215,7 +215,7 @@ class ListBoardSerializer(serializers.ModelSerializer):
 class ListCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title']
+        fields = ['id','title','order']
 
 class ListSerializer(serializers.ModelSerializer):
     card = serializers.SerializerMethodField()
@@ -560,3 +560,12 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
     def get_labels(self, obj):
         label = obj.boardl.all()
         return LabelTimelineSerializer(label, many=True).data
+
+
+
+### Calender
+
+class CalenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']

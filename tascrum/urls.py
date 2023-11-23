@@ -58,4 +58,8 @@ router.register('label-tl',views.LabelTimelineView,basename='label-tl')
 
 
 
+###
+router.register('calender',views.CalenderView,basename='calender')
+
+
 urlpatterns = router.urls
