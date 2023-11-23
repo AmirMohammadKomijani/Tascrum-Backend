@@ -568,4 +568,4 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 class CalenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','startdate','duedate','reminder','storypoint','setestimate']
+        fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']
