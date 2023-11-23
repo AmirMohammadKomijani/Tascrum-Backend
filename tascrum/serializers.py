@@ -215,7 +215,7 @@ class ListBoardSerializer(serializers.ModelSerializer):
 class ListCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title']
+        fields = ['id','title','order']
 
 class ListSerializer(serializers.ModelSerializer):
     card = serializers.SerializerMethodField()
