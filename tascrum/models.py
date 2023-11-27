@@ -86,8 +86,9 @@ class MemberCardRole(models.Model):
 
 
 class BurndownChart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='burndown_charts')
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='burndown_charts')
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='burndown_charts')
     date = models.DateField(null=False)
-    done = models.IntegerField(default=0)
-    estimate = models.IntegerField(default=0)
+    done = models.FloatField(default=0)
+    estimate = models.FloatField(default=0)
 
