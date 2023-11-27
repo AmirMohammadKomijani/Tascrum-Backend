@@ -6,6 +6,7 @@ from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
 from .utils import generate_invitation_link
@@ -353,3 +354,33 @@ class CalenderView(ModelViewSet):
         boards = Board.objects.filter(members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
+
+
+
+class CreateBurndownChartView(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        return BurndownChart.objects.filter(user = self.request.user.id)
+    
+
+class BurndownChartViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return BurndownChart.objects.filter(board__members=user)
+        else:
+            return BurndownChart.objects.none()
+    
+    def update(self, request, pk=None):
+        burndown_chart = BurndownChart.objects.get(pk=pk)
+        serializer = CreateBurndownChartSerializer(burndown_chart, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

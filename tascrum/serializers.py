@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel,Survey
+from .models import *
 from Auth.serializers import UserProfileSerializer, UserTimelineSerializer
 from Auth.models import User
 from django.utils import timezone
@@ -260,10 +260,10 @@ class CardRoleSerializer(serializers.ModelSerializer):
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    # role = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','order','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
+        fields = ['id','order','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -473,6 +473,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("you are not owner of this board.")
 
 
+
 ### Drag and Drop
 
 class Internal_DnDSerializer(serializers.ModelSerializer):
@@ -497,18 +498,6 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
         instance.order = new_order
         instance.save()
         return instance
-
-# Review
-
-class SurveySerializer(serializers.ModelSerializer):
-    questions = serializers.SerializerMethodField()
-
-    def get_questions(self, survey):
-        return serializers.serialize('json', survey.questions.all())
-
-    class Meta:
-        model = Survey
-        fields = ('title', 'created_by', 'questions')
 
 
 ## timeline
@@ -557,6 +546,37 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id','members']
 
+
+
+
+## burndown
+class CreateBurndownChartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BurndownChart
+        fields = ['id', 'member', 'date', 'done', 'estimate','board']
+
+
+    def update(self, instance, validated_data):
+        new_order = validated_data.get('order', instance.order)
+        instance.list = validated_data.get('list', instance.list)
+        if new_order < instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
+            for card in cards:
+                card.order += 1
+                card.save()
+        elif new_order > instance.order:
+            cards = Card.objects.filter(list=instance.list,order__gte=instance.order,order__lte=new_order).exclude(id = instance.id)
+            for card in cards:
+                card.order -= 1
+                card.save()
+        instance.order = new_order
+
+        instance.done = validated_data.get('done', instance.done)
+        instance.estimate = validated_data.get('estimate', instance.estimate)
+        instance.save()
+        return instance
+
+
 #label
 class LabelTimelineSerializer(serializers.ModelSerializer):
     cards = serializers.SerializerMethodField()
@@ -588,3 +608,12 @@ class CalenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']
+
+
+
+## Review
+class SurveySerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+
+    def get_questions(self, survey):
+        return serializers.serialize('json', survey.questions.all())

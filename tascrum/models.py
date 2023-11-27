@@ -121,21 +121,23 @@ class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
     role = models.CharField(max_length=50,default='member')
-
-
+    
 class BurndownChart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='burndown_charts')
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='burndown_charts')
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='burndown_charts')
     date = models.DateField(null=False)
-    done = models.IntegerField(default=0)
-    estimate = models.IntegerField(default=0)
-
-
-class Survey(models.Model):
-    title = models.CharField(max_length=255)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    questions = models.ManyToManyField('Question')
+    done = models.FloatField(default=0)
+    estimate = models.FloatField(default=0)
 
 class Question(models.Model):
     text = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
 
+class Survey(models.Model):
+    title = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    questions = models.ManyToManyField(Question, through='SurveyQuestion',related_name='survey')
+
+class SurveyQuestion(models.Model):
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
