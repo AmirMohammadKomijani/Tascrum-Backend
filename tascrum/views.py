@@ -237,7 +237,7 @@ class BurndownChartViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
-            return BurndownChart.objects.filter(member=user)
+            return BurndownChart.objects.filter(board__members=user)
         else:
             return BurndownChart.objects.none()
     
