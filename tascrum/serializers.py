@@ -263,7 +263,7 @@ class CardSerializer(serializers.ModelSerializer):
     # role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','order','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate']
+        fields = ['id','order','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -273,7 +273,7 @@ class CardSerializer(serializers.ModelSerializer):
 class CreateCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate']
+        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description']
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -288,6 +288,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.reminder = validated_data.get('reminder', instance.reminder)
         instance.storypoint = validated_data.get('storypoint', instance.storypoint)
         instance.setestimate = validated_data.get('setestimate', instance.setestimate)
+        instance.description = validated_data.get('description', instance.description)
         instance.save()
         return instance
 

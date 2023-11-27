@@ -74,6 +74,7 @@ class Card(models.Model):
     members = models.ManyToManyField(Member, through='MemberCardRole',related_name='cmembers')
     startdate = models.DateTimeField(null=True)
     duedate = models.DateTimeField(null=True)
+    description = models.TextField(null=True)
     storypoint = models.IntegerField(default=0)
     setestimate = models.IntegerField(default=0)
     reminder_choice =(
