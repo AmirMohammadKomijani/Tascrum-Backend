@@ -137,5 +137,3 @@ class BurndownChart(models.Model):
 # class Question(models.Model):
 #     text = models.CharField(max_length=255)
 #     type = models.CharField(max_length=255)
-
-
