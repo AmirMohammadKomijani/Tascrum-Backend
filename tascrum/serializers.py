@@ -276,9 +276,18 @@ class CreateCardSerializer(serializers.ModelSerializer):
         fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description']
 
     def create(self, validated_data):
-        member = Member.objects.get(user_id = self.context['user_id'])
-        validated_data['duedate'] = timezone.now()
-        card = Card.objects.create(**validated_data)
+        owner = Member.objects.get(user_id = self.context['user_id'])
+        board_role = MemberBoardRole.objects.filter(member = owner).first()
+
+        if board_role.role == "owner":
+            validated_data['duedate'] = timezone.now()    
+            card = Card.objects.create(**validated_data)
+            MemberCardRole.objects.create(card)
+            return card
+        else:
+            raise serializers.ValidationError("you are not owner of this board.")
+
+        # membercardrole = MemberCardRole.objects.create(member=member,card=card,role=)
         return card
     
     def update(self, instance, validated_data):
