@@ -568,18 +568,6 @@ class CreateBurndownChartSerializer(serializers.ModelSerializer):
         return instance
 
 
-# # Review
-# class SurveySerializer(serializers.ModelSerializer):
-#     questions = serializers.SerializerMethodField()
-
-#     def get_questions(self, survey):
-#         return serializers.serialize('json', survey.questions.all())
-
-#     class Meta:
-#         model = Survey
-#         fields = ('title', 'created_by', 'questions')
-
-
 #label
 class LabelTimelineSerializer(serializers.ModelSerializer):
     cards = serializers.SerializerMethodField()
@@ -611,3 +599,12 @@ class CalenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']
+
+
+
+## Review
+class SurveySerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+
+    def get_questions(self, survey):
+        return serializers.serialize('json', survey.questions.all())
