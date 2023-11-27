@@ -253,25 +253,20 @@ class LabelBoardView(ModelViewSet):
 
 # assign Labels to card
 class LabelCardAssignView(ModelViewSet):
+    queryset = CardLabel.objects.all()
     serializer_class = LabelCardAssignSerializer
     permission_classes = [IsAuthenticated]
     
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members=member_id)
-        return CardLabel.objects.filter(card__in=card_id)
-    
+
 class LabelCardView(ModelViewSet):
-    queryset = Lable.objects.all()
     serializer_class = LabelCardSerializer
     permission_classes = [IsAuthenticated]
     
-    def retrieve(self, request, pk=None):
-        queryset =  Lable.objects.filter(labelc__card = pk)
-        serializer = LabelCardSerializer(queryset , many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Card.objects.filter(id__in=self.kwargs.get('pk'))
+
 
 
 ### invite member

@@ -351,6 +351,10 @@ class CreateChecklistSerializer(serializers.ModelSerializer):
         return instance
 
 ## Lables in Board
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color']
 class CreateLabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lable
@@ -366,11 +370,6 @@ class CreateLabelSerializer(serializers.ModelSerializer):
         instance.color = validated_data.get('color', instance.color)
         instance.save()
         return instance
-
-class LabelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lable
-        fields = ['id', 'title', 'color']
 
 class LabelBoardSerializer(serializers.ModelSerializer):
     labels = serializers.SerializerMethodField()
@@ -393,12 +392,22 @@ class LabelCardAssignSerializer(serializers.ModelSerializer):
         label_card = CardLabel.objects.create(**validated_data)        
         return label_card
 
+class lcSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CardLabel
+        fields = ['id', 'card']
 
 class LabelCardSerializer(serializers.ModelSerializer):
+    labels = LabelSerializer(many=True)
+    labelcard = serializers.SerializerMethodField()
     class Meta:
-        model = Lable
-        fields = "__all__"
-  
+        model = Card
+        fields = ["id", 'labels', 'labelcard']
+
+    def get_labelcard(self, obj):
+        lc = obj.cardl.all()
+        return lcSerializer(lc, many=True).data
+
     
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
