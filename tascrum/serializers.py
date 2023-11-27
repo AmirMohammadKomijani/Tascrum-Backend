@@ -568,16 +568,16 @@ class CreateBurndownChartSerializer(serializers.ModelSerializer):
         return instance
 
 
-# Review
-class SurveySerializer(serializers.ModelSerializer):
-    questions = serializers.SerializerMethodField()
+# # Review
+# class SurveySerializer(serializers.ModelSerializer):
+#     questions = serializers.SerializerMethodField()
 
-    def get_questions(self, survey):
-        return serializers.serialize('json', survey.questions.all())
+#     def get_questions(self, survey):
+#         return serializers.serialize('json', survey.questions.all())
 
-    class Meta:
-        model = Survey
-        fields = ('title', 'created_by', 'questions')
+#     class Meta:
+#         model = Survey
+#         fields = ('title', 'created_by', 'questions')
 
 
 #label
