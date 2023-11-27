@@ -229,3 +229,19 @@ class CreateBurndownChartView(ModelViewSet):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
         return BurndownChart.objects.filter(user = self.request.user.id)
+    
+
+class BurndownChartViewSet(ModelViewSet):
+
+    def get_queryset(self, request):
+        queryset = BurndownChart.objects.filter(member=request.user)
+        serializer = CreateBurndownChartSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    def update(self, request, pk=None):
+        burndown_chart = BurndownChart.objects.get(pk=pk)
+        serializer = CreateBurndownChartSerializer(burndown_chart, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

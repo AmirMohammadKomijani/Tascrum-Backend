@@ -377,7 +377,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
 class CreateBurndownChartSerializer(serializers.ModelSerializer):
     class Meta:
         model = BurndownChart
-        fields = ['id', 'user', 'date', 'done', 'estimate']
+        fields = ['id', 'user', 'date', 'done', 'estimate','board']
 
     def create(self, validated_data):
         return BurndownChart.objects.create(**validated_data)
