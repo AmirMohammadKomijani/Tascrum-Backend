@@ -92,7 +92,11 @@ class CreateBoardView(ModelViewSet):
         invitation_link = generate_invitation_link()
         board.invitation_link = invitation_link
         board.save()
-
+        Lable.objects.create(board=board, color='#e67c73', title='')
+        Lable.objects.create(board=board, color='#f7cb4d', title='')
+        Lable.objects.create(board=board, color='#41b375', title='')
+        Lable.objects.create(board=board, color='#7baaf7', title='')
+        Lable.objects.create(board=board, color='#ba67c8', title='')
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
