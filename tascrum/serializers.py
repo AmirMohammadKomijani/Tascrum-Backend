@@ -292,6 +292,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.list = validated_data.get('list', instance.list)
         instance.startdate = validated_data.get('startdate' , instance.startdate)
         instance.duedate = validated_data.get('duedate' , instance.duedate)
         instance.reminder = validated_data.get('reminder', instance.reminder)
