@@ -395,7 +395,7 @@ class LabelCardAssignSerializer(serializers.ModelSerializer):
 class lcSerializer(serializers.ModelSerializer):
     class Meta:
         model = CardLabel
-        fields = ['id', 'card']
+        fields = ['id']
 
 class LabelCardSerializer(serializers.ModelSerializer):
     labels = LabelSerializer(many=True)
@@ -405,9 +405,8 @@ class LabelCardSerializer(serializers.ModelSerializer):
         fields = ["id", 'labels', 'labelcard']
 
     def get_labelcard(self, obj):
-        lc = obj.cardl.all()
+        lc = obj.cardl.all().order_by('label__id')
         return lcSerializer(lc, many=True).data
-
     
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):

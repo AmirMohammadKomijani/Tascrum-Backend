@@ -104,7 +104,9 @@ class Card(models.Model):
 class CardLabel(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='cardl')
     label = models.ForeignKey(Lable, on_delete=models.CASCADE, related_name='labelc')
-
+    def get_labelcard(self, obj):
+        lc = obj.cardl.all().order_by('label__id')
+        return lcSerializer(lc, many=True).data
 class Checklist(models.Model):
     title = models.CharField(max_length=60, null=True)
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='chcard')
