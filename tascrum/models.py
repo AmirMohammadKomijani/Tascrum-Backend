@@ -107,6 +107,7 @@ class CardLabel(models.Model):
     label = models.ForeignKey(Lable, on_delete=models.CASCADE, related_name='labelc')
     class Meta:
         unique_together = ('card', 'label')
+        ordering = ['label']
 
 class Checklist(models.Model):
     title = models.CharField(max_length=60, null=True)
