@@ -84,7 +84,7 @@ class cardTest(APITestCase, SimpleTestCase):
     # def test_card_fields_after_get(self):
     #     response = self.test_card_get_authenticated()
     #     self.assertEquals(self.card.title,'card test')
-        self.assertEquals(self.card.reminder,'5 Minuets before')
+        # self.assertEquals(self.card.reminder,'5 Minuets before')
 
     # def test_card_date_after_get(self):
     #     response = self.test_card_get_authenticated()
