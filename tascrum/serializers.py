@@ -604,9 +604,15 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 ### Calender
 
 class CalenderSerializer(serializers.ModelSerializer):
+    members = CardMemberSerializer(many=True)
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Card
         fields = ['id','order','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
 
 
 
