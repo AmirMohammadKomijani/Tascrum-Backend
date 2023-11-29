@@ -606,7 +606,7 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 class CalenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']
+        fields = ['id','order','title','list','members','role','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
 
 
 
