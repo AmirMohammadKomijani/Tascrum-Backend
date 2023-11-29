@@ -6,6 +6,7 @@ from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
 from .utils import generate_invitation_link
@@ -91,7 +92,11 @@ class CreateBoardView(ModelViewSet):
         invitation_link = generate_invitation_link()
         board.invitation_link = invitation_link
         board.save()
-
+        Lable.objects.create(board=board, color='#e67c73', title='')
+        Lable.objects.create(board=board, color='#f7cb4d', title='')
+        Lable.objects.create(board=board, color='#41b375', title='')
+        Lable.objects.create(board=board, color='#7baaf7', title='')
+        Lable.objects.create(board=board, color='#ba67c8', title='')
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
@@ -253,25 +258,20 @@ class LabelBoardView(ModelViewSet):
 
 # assign Labels to card
 class LabelCardAssignView(ModelViewSet):
+    queryset = CardLabel.objects.all()
     serializer_class = LabelCardAssignSerializer
     permission_classes = [IsAuthenticated]
     
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members=member_id)
-        return CardLabel.objects.filter(card__in=card_id)
-    
+
 class LabelCardView(ModelViewSet):
-    queryset = Lable.objects.all()
     serializer_class = LabelCardSerializer
     permission_classes = [IsAuthenticated]
     
-    def retrieve(self, request, pk=None):
-        queryset =  Lable.objects.filter(labelc__card = pk)
-        serializer = LabelCardSerializer(queryset , many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Card.objects.filter(id__in=self.kwargs.get('pk'))
+
 
 
 ### invite member
@@ -358,3 +358,33 @@ class CalenderView(ModelViewSet):
         boards = Board.objects.filter(members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
+
+
+
+class CreateBurndownChartView(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        return BurndownChart.objects.filter(user = self.request.user.id)
+    
+
+class BurndownChartViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return BurndownChart.objects.filter(board__members=user)
+        else:
+            return BurndownChart.objects.none()
+    
+    def update(self, request, pk=None):
+        burndown_chart = BurndownChart.objects.get(pk=pk)
+        serializer = CreateBurndownChartSerializer(burndown_chart, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
