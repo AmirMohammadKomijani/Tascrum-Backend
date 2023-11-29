@@ -574,7 +574,6 @@ class CreateBurndownChartSerializer(serializers.ModelSerializer):
             'date': representation['date'],
             'data': [
                 {
-                    'id': representation['id'],
                     'member': representation['member'],
                     'username': representation['member_username'],
                     'done': representation['done'],

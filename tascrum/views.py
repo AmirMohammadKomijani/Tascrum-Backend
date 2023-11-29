@@ -13,6 +13,7 @@ from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
+from collections import defaultdict
 
 # Create your views here.
 
@@ -392,6 +393,14 @@ class BurndownChartViewSet(ModelViewSet):
         for item in serializer.data: 
             data[item['date']].append(item['data'][0]) 
         return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())]) 
+    
+    def retrieve(self, request, pk=None):
+        queryset = self.get_queryset().filter(board__id=pk)
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+        return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())])
     
     def update(self, request, pk=None):
         burndown_chart = BurndownChart.objects.get(pk=pk)
