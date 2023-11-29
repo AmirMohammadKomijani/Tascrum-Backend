@@ -550,18 +550,39 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
 
 ## burndown
 class CreateBurndownChartSerializer(serializers.ModelSerializer):
+    member_username = serializers.SerializerMethodField()
     class Meta:
         model = BurndownChart
-        fields = ['id', 'member', 'date', 'done', 'estimate','board']
+        fields = ['id', 'member', 'date', 'done', 'estimate','board','member_username']
 
+    def get_member_username(self, obj):
+        return obj.member.user.username
+    
     def create(self, validated_data):
         return BurndownChart.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {
+            'id': representation['id'],
+            'date': representation['date'],
+            'data': [
+                {
+                    'member': representation['member'],
+                    'username': representation['member_username'],
+                    'done': representation['done'],
+                    'estimate': representation['estimate'],
+                    'board': representation['board']
+                }
+            ]
+        }
+    
     def update(self, instance, validated_data):
         instance.done = validated_data.get('done', instance.done)
         instance.estimate = validated_data.get('estimate', instance.estimate)
         instance.save()
         return instance
+
 
 
 #label
