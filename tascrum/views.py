@@ -270,9 +270,16 @@ class LabelCardView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Card.objects.filter(id__in=self.kwargs.get('pk'))
+        card_id = self.kwargs.get('pk')
+        # labels_in_card = CardLabel.objects.filter(card = card_id).all()
+        # cards = labels_in_card.values_list('label__card_id',flat=True)
+        # return Card.objects.exclude(id__in = cards).all()
+        return Card.objects.filter(id = card_id)
 
-
+        # board_id = self.request.query_params.get('board')
+        # members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
+        # members = members_in_board.values_list('member__user_id', flat=True)
+        # return User.objects.exclude(id__in = members).all()
 
 ### invite member
 class FindUserView(ModelViewSet):
@@ -373,13 +380,11 @@ class CreateBurndownChartView(ModelViewSet):
 
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            return BurndownChart.objects.filter(board__members=user)
-        else:
-            return BurndownChart.objects.none()
+        user = self.request.user.id
+        return BurndownChart.objects.filter(board__members=user)
     
     def update(self, request, pk=None):
         burndown_chart = BurndownChart.objects.get(pk=pk)
