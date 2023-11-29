@@ -556,26 +556,34 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
 
 ## burndown
 class CreateBurndownChartSerializer(serializers.ModelSerializer):
+    member_username = serializers.SerializerMethodField()
     class Meta:
         model = BurndownChart
-        fields = ['id', 'member', 'date', 'done', 'estimate','board']
+        fields = ['id', 'member', 'date', 'done', 'estimate','board','member_username']
 
+    def get_member_username(self, obj):
+        return obj.member.user.username
+    
+    def create(self, validated_data):
+        return BurndownChart.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {
+            'id': representation['id'],
+            'date': representation['date'],
+            'data': [
+                {
+                    'member': representation['member'],
+                    'username': representation['member_username'],
+                    'done': representation['done'],
+                    'estimate': representation['estimate'],
+                    'board': representation['board']
+                }
+            ]
+        }
+    
     def update(self, instance, validated_data):
-        new_order = validated_data.get('order', instance.order)
-        instance.list = validated_data.get('list', instance.list)
-        if new_order < instance.order:
-            cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
-            for card in cards:
-                card.order += 1
-                card.save()
-        elif new_order > instance.order:
-            cards = Card.objects.filter(list=instance.list,order__gte=instance.order,order__lte=new_order).exclude(id = instance.id)
-            for card in cards:
-                card.order -= 1
-                card.save()
-        instance.order = new_order
-
         instance.done = validated_data.get('done', instance.done)
         instance.estimate = validated_data.get('estimate', instance.estimate)
         instance.save()

@@ -376,15 +376,22 @@ class CreateBurndownChartView(ModelViewSet):
         return {'user_id':self.request.user.id}
     def get_queryset(self):
         return BurndownChart.objects.filter(user = self.request.user.id)
+  
     
-
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
-
     def get_queryset(self):
         user = self.request.user.id
         return BurndownChart.objects.filter(board__members=user)
+    
+    def list(self, request, *args, **kwargs): 
+        queryset = self.filter_queryset(self.get_queryset()) 
+        serializer = self.get_serializer(queryset, many=True) 
+        data = defaultdict(list) 
+        for item in serializer.data: 
+            data[item['date']].append(item['data'][0]) 
+        return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())]) 
     
     def update(self, request, pk=None):
         burndown_chart = BurndownChart.objects.get(pk=pk)
