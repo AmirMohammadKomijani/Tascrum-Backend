@@ -373,13 +373,11 @@ class CreateBurndownChartView(ModelViewSet):
 
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            return BurndownChart.objects.filter(board__members=user)
-        else:
-            return BurndownChart.objects.none()
+        user = self.request.user.id
+        return BurndownChart.objects.filter(board__members=user)
     
     def update(self, request, pk=None):
         burndown_chart = BurndownChart.objects.get(pk=pk)
