@@ -88,6 +88,15 @@ class Card(models.Model):
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
     order = models.IntegerField(null=True,auto_created=True)
     labels = models.ManyToManyField(Lable, through='CardLabel', related_name='clabel')
+
+    status_choice = (
+    ('Done','Done'),
+    ('overdue','overdue'),
+    ('pending','pending'),
+    ('failed','failed'),
+    )
+    status = models.CharField(max_length=8,choices=status_choice,default='pending')
+
     class Meta:
         ordering = ('order',)
         # unique_together = ('list', 'order',)
@@ -122,6 +131,8 @@ class MemberCardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='cmember')
     card = models.ForeignKey(Card, on_delete=models.CASCADE,related_name='crole')
     role = models.CharField(max_length=50,default='member')
+    class Meta:
+        ordering = ['member']
 
     class Meta:
         ordering = ['member']
