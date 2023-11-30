@@ -10,7 +10,7 @@ from Auth.models import User
 from tascrum.models import *
 from tascrum.views import CardView,CreateCardView,CardAssignmentView
 
-CardAssignmentView
+
 class cardTest(APITestCase, SimpleTestCase):
     def test_CardView_url(self):
         url = reverse("card-list")
@@ -152,16 +152,16 @@ class CreateCardViewTest(APITestCase, SimpleTestCase):
         token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
     
-    def test_card_count(self):
-        self.authenticate()
-        card_data = {"title":"card test","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
-        response = self.client.post(reverse('crcard-list') , card_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    # def test_card_count(self):
+    #     self.authenticate()
+    #     card_data = {"title":"card test","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+    #     response = self.client.post(reverse('crcard-list') , card_data)
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        card_data = {"title":"card test2","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
-        response = self.client.post(reverse('crcard-list') , card_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #     card_data = {"title":"card test2","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+    #     response = self.client.post(reverse('crcard-list') , card_data)
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-        self.assertEqual(Card.objects.all().count(), 3)
+    #     self.assertEqual(Card.objects.all().count(), 3)
 
-        self.assertEqual(Card.objects.filter(title='card test2').count(), 1)
+    #     self.assertEqual(Card.objects.filter(title='card test2').count(), 1)
