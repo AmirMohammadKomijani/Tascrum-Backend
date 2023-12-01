@@ -435,12 +435,11 @@ class CardAssignSerializer(serializers.ModelSerializer):
         fields = ['id','card','member']
     
     def create(self, validated_data):
-        owner = Member.objects.get(user_id = self.context['user_id'])
-        board_role = MemberBoardRole.objects.filter(member = owner).first()
-        if board_role.role == "owner":
-            return MemberCardRole.objects.create(**validated_data)
-        else:
-            raise serializers.ValidationError("you are not owner of this board.")
+        # owner = Member.objects.get(user_id = self.context['user_id'])
+        # board_role = MemberBoardRole.objects.filter(member = owner).first()
+        return MemberCardRole.objects.create(**validated_data)
+        # else:
+        #     raise serializers.ValidationError("you are not owner of this board.")
 
 
 
