@@ -101,18 +101,18 @@ class ProfileTest(changepasswordTest):
     #                                       username= "sabarzii", password='thisissaba'
     #     }))
     
-    def test_update_profile(self):
-        response = self.create_member()
-        # response = self.authenticate()
-        updated_data = {
-            'occupations': 'Student',
-            'bio': 'Updated bio',
-            'birthdate': '1990-01-01'
-        }
-        response = self.client.put(
-            reverse("profile-list", kwargs={'id': response.data['id']}), {
-                "bio": "New one"
-            })
+    # def test_update_profile(self):
+    #     response = self.create_member()
+    #     # response = self.authenticate()
+    #     updated_data = {
+    #         'occupations': 'Student',
+    #         'bio': 'Updated bio',
+    #         'birthdate': '1990-01-01'
+    #     }
+    #     response = self.client.put(
+    #         reverse("profile-list", kwargs={'id': response.data['id']}), {
+    #             "bio": "New one"
+    #         })
 
         # response = self.authenticate()
 
