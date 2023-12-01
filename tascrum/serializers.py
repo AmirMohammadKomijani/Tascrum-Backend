@@ -493,30 +493,39 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         new_order = validated_data.get('order', instance.order)
         new_list = validated_data.get('list', instance.list)
+
         if instance.list == new_list:
+            # Update order for cards in the same list
             if new_order < instance.order:
-                cards = Card.objects.filter(list=instance.list,order__gte = new_order,order__lte=instance.order).exclude(id = instance.id)
+                cards = Card.objects.filter(list=instance.list, order__gte=new_order, order__lte=instance.order).exclude(
+                    id=instance.id
+                )
                 for card in cards:
                     card.order += 1
                     card.save()
             elif new_order > instance.order:
-                cards = Card.objects.filter(list=instance.list,order__gte=instance.order,order__lte=new_order).exclude(id = instance.id)
+                cards = Card.objects.filter(list=instance.list, order__gte=instance.order, order__lte=new_order).exclude(
+                    id=instance.id
+                )
                 for card in cards:
                     card.order -= 1
                     card.save()
-        if instance.list != new_list:
+
+        elif instance.list != new_list:
             # Update order for cards in the old list with order greater than instance.order
-            cards_to_update_old_list = Card.objects.filter(
-                list=instance.list, order__gt=instance.order
-            ).exclude(id=instance.id)
+            if new_order < instance.order:
+                cards_to_update_old_list = Card.objects.filter(list=instance.list, order__gt=instance.order).exclude(
+                    id=instance.id
+                )
+            # Update order for cards in the new list with order greater than or equal to new_order
+            elif new_order > instance.order:
+                cards_to_update_new_list = Card.objects.filter(list=new_list, order__gte=new_order)
+
+            # Update order for cards in both cases
             for card in cards_to_update_old_list:
                 card.order -= 1
                 card.save()
 
-            # Update order for cards in the new list with order greater than or equal to new_order
-            cards_to_update_new_list = Card.objects.filter(
-                list=new_list, order__gte=new_order
-            )
             for card in cards_to_update_new_list:
                 card.order += 1
                 card.save()
@@ -526,6 +535,7 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
 
 
 ## timeline
