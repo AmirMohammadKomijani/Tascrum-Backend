@@ -43,3 +43,4 @@ jobs:
           npm i -g @liara/cli@5
           if [ ${{ github.ref }} == 'refs/heads/develop' ]; then
           liara deploy --app="wonderful-sammet-5-1sbsqxi" --api-token="$LIARA_TOKEN" --no-app-logs
+          fi
