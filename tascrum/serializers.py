@@ -131,6 +131,12 @@ class BoardMembersSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id','members']
 
+    def get_members(self, obj):
+        members = obj.members.order_by('id')
+        return BoardMemberSerializer(members, many=True).data
+
+    members = serializers.SerializerMethodField('get_members')
+
 class BoardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
