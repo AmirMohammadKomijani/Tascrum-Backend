@@ -16,6 +16,7 @@
 #         url = reverse("card-list")
 #         self.assertEqual(resolve(url).func.cls, CardView)
 
+
 #     def test_CardAssignmentView_url(self):
 #         url = reverse("assign-list")
 #         self.assertEqual(resolve(url).func.cls, CardAssignmentView)
@@ -152,6 +153,7 @@
 #         token = response.data["access"]
 #         self.client.credentials(HTTP_AUTHORIZATION=f'JWT {token}')
     
+<<<<<<< HEAD
 #     def test_card_count(self):
 #         self.authenticate()
 #         card_data = {"title":"card test","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
@@ -165,3 +167,18 @@
 #         self.assertEqual(Card.objects.all().count(), 3)
 
 #         self.assertEqual(Card.objects.filter(title='card test2').count(), 1)
+=======
+    # def test_card_count(self):
+    #     self.authenticate()
+    #     card_data = {"title":"card test","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+    #     response = self.client.post(reverse('crcard-list') , card_data)
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    #     card_data = {"title":"card test2","list":"1","startdate":'2022-05-15',"duedate":'2024-05-15',"reminder":'1 Day before'}
+    #     response = self.client.post(reverse('crcard-list') , card_data)
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+    #     self.assertEqual(Card.objects.all().count(), 3)
+
+    #     self.assertEqual(Card.objects.filter(title='card test2').count(), 1)
+>>>>>>> 56ab027e39219fb31e6594458f84c42b7a078dc4

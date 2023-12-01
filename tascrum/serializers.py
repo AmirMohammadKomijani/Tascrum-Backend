@@ -1,10 +1,9 @@
 from rest_framework import serializers
-from .models import Member,Workspace,MemberWorkspaceRole,Board,MemberBoardRole,List,Card,MemberCardRole,Checklist,Item,Lable,CardLabel,Survey
+from .models import *
 from Auth.serializers import UserProfileSerializer, UserTimelineSerializer
 from Auth.models import User
 from django.utils import timezone
-from django.db.models import F
-
+import datetime
 ### Profile feature
 class MemberProfileSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
@@ -257,13 +256,19 @@ class CardRoleSerializer(serializers.ModelSerializer):
         model = MemberCardRole
         fields = ['id','role']
 
+class CardLableSerialzier(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = '__all__'
+
 ## showing cards details
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
-    # role = serializers.SerializerMethodField()
+    labels = CardLableSerialzier(many=True)
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','order','title','list','members','startdate','duedate','reminder', 'storypoint', 'setestimate','description']
+        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -273,7 +278,7 @@ class CardSerializer(serializers.ModelSerializer):
 class CreateCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description']
+        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description','status']
 
     def create(self, validated_data):
         owner = Member.objects.get(user_id = self.context['user_id'])
@@ -286,9 +291,6 @@ class CreateCardSerializer(serializers.ModelSerializer):
             return card
         else:
             raise serializers.ValidationError("you are not owner of this board.")
-
-        # membercardrole = MemberCardRole.objects.create(member=member,card=card,role=)
-        return card
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -298,6 +300,10 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.storypoint = validated_data.get('storypoint', instance.storypoint)
         instance.setestimate = validated_data.get('setestimate', instance.setestimate)
         instance.description = validated_data.get('description', instance.description)
+        
+        if instance.duedate < timezone.now():
+            instance.status = validated_data.get('status', instance.status)
+            instance.status = "overdue"
         instance.save()
         return instance
 
@@ -361,6 +367,10 @@ class CreateChecklistSerializer(serializers.ModelSerializer):
         return instance
 
 ## Lables in Board
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color']
 class CreateLabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lable
@@ -376,11 +386,6 @@ class CreateLabelSerializer(serializers.ModelSerializer):
         instance.color = validated_data.get('color', instance.color)
         instance.save()
         return instance
-
-class LabelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lable
-        fields = ['id', 'title', 'color']
 
 class LabelBoardSerializer(serializers.ModelSerializer):
     labels = serializers.SerializerMethodField()
@@ -403,12 +408,21 @@ class LabelCardAssignSerializer(serializers.ModelSerializer):
         label_card = CardLabel.objects.create(**validated_data)        
         return label_card
 
+class lcSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CardLabel
+        fields = ['id']
 
 class LabelCardSerializer(serializers.ModelSerializer):
+    labels = LabelSerializer(many=True)
+    labelcard = serializers.SerializerMethodField()
     class Meta:
-        model = Lable
-        fields = "__all__"
-  
+        model = Card
+        fields = ["id", 'labels', 'labelcard']
+
+    def get_labelcard(self, obj):
+        lc = obj.cardl.all().order_by('label__id')
+        return lcSerializer(lc, many=True).data
     
 ## assign members to card
 class CardMemberAssignSerializer(serializers.ModelSerializer):
@@ -464,6 +478,7 @@ class AddMemberSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("you are not owner of this board.")
 
 
+
 ### Drag and Drop
 
 class Internal_DnDSerializer(serializers.ModelSerializer):
@@ -488,18 +503,6 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
         instance.order = new_order
         instance.save()
         return instance
-
-# Review
-
-class SurveySerializer(serializers.ModelSerializer):
-    questions = serializers.SerializerMethodField()
-
-    def get_questions(self, survey):
-        return serializers.serialize('json', survey.questions.all())
-
-    class Meta:
-        model = Survey
-        fields = ('title', 'created_by', 'questions')
 
 
 ## timeline
@@ -548,6 +551,45 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id','members']
 
+
+
+
+## burndown
+class CreateBurndownChartSerializer(serializers.ModelSerializer):
+    member_username = serializers.SerializerMethodField()
+    class Meta:
+        model = BurndownChart
+        fields = ['id', 'member', 'date', 'done', 'estimate','board','member_username']
+
+    def get_member_username(self, obj):
+        return obj.member.user.username
+    
+    def create(self, validated_data):
+        return BurndownChart.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {
+            'id': representation['id'],
+            'date': representation['date'],
+            'data': [
+                {
+                    'member': representation['member'],
+                    'username': representation['member_username'],
+                    'done': representation['done'],
+                    'estimate': representation['estimate'],
+                    'board': representation['board']
+                }
+            ]
+        }
+    
+    def update(self, instance, validated_data):
+        instance.done = validated_data.get('done', instance.done)
+        instance.estimate = validated_data.get('estimate', instance.estimate)
+        instance.save()
+        return instance
+
+
 #label
 class LabelTimelineSerializer(serializers.ModelSerializer):
     cards = serializers.SerializerMethodField()
@@ -576,6 +618,21 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 ### Calender
 
 class CalenderSerializer(serializers.ModelSerializer):
+    members = CardMemberSerializer(many=True)
+    labels = CardLableSerialzier(many=True)
+    role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','title','startdate','duedate','reminder','storypoint','setestimate']
+        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
+
+## Review
+class SurveySerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+
+    def get_questions(self, survey):
+        return serializers.serialize('json', survey.questions.all())
+

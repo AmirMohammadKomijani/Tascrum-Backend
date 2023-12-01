@@ -6,12 +6,14 @@ from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework import status
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
 from .utils import generate_invitation_link
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
+from collections import defaultdict
 
 # Create your views here.
 
@@ -91,7 +93,11 @@ class CreateBoardView(ModelViewSet):
         invitation_link = generate_invitation_link()
         board.invitation_link = invitation_link
         board.save()
-
+        Lable.objects.create(board=board, color='#e67c73', title='')
+        Lable.objects.create(board=board, color='#f7cb4d', title='')
+        Lable.objects.create(board=board, color='#41b375', title='')
+        Lable.objects.create(board=board, color='#7baaf7', title='')
+        Lable.objects.create(board=board, color='#ba67c8', title='')
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
@@ -253,26 +259,28 @@ class LabelBoardView(ModelViewSet):
 
 # assign Labels to card
 class LabelCardAssignView(ModelViewSet):
+    queryset = CardLabel.objects.all()
     serializer_class = LabelCardAssignSerializer
     permission_classes = [IsAuthenticated]
     
     def get_serializer_context(self):
         return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members=member_id)
-        return CardLabel.objects.filter(card__in=card_id)
-    
+
 class LabelCardView(ModelViewSet):
-    queryset = Lable.objects.all()
     serializer_class = LabelCardSerializer
     permission_classes = [IsAuthenticated]
     
-    def retrieve(self, request, pk=None):
-        queryset =  Lable.objects.filter(labelc__card = pk)
-        serializer = LabelCardSerializer(queryset , many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        card_id = self.kwargs.get('pk')
+        # labels_in_card = CardLabel.objects.filter(card = card_id).all()
+        # cards = labels_in_card.values_list('label__card_id',flat=True)
+        # return Card.objects.exclude(id__in = cards).all()
+        return Card.objects.filter(id = card_id)
 
+        # board_id = self.request.query_params.get('board')
+        # members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
+        # members = members_in_board.values_list('member__user_id', flat=True)
+        # return User.objects.exclude(id__in = members).all()
 
 ### invite member
 class FindUserView(ModelViewSet):
@@ -358,3 +366,53 @@ class CalenderView(ModelViewSet):
         boards = Board.objects.filter(members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
+
+
+
+class CreateBurndownChartView(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    def get_queryset(self):
+        return BurndownChart.objects.filter(user = self.request.user.id)
+  
+    
+class BurndownChartViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user.id
+        return BurndownChart.objects.filter(board__members=user)
+    
+    def list(self, request, *args, **kwargs): 
+        queryset = self.filter_queryset(self.get_queryset()) 
+        serializer = self.get_serializer(queryset, many=True) 
+        data = defaultdict(list) 
+        for item in serializer.data: 
+            data[item['date']].append(item['data'][0]) 
+        return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())]) 
+    
+    def update(self, request, *args, **kwargs):
+        date = request.data.get('date')
+        member_id = request.data.get('member')
+        burndown_chart = self.get_queryset().filter(date=date, member__id=member_id).first()
+        if burndown_chart is None:
+            return Response({'error': 'No matching BurndownChart found.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(burndown_chart, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class BurndownChartSumViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, board_id=None, member_id=None):
+        queryset = BurndownChart.objects.filter(board__id=board_id, member__id=member_id)
+        done_sum = queryset.aggregate(Sum('done'))['done__sum']
+        estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
+        return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
+    
