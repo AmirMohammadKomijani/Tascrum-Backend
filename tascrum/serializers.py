@@ -629,11 +629,10 @@ class CalenderSerializer(serializers.ModelSerializer):
         roles = obj.crole.all()
         return CardRoleSerializer(roles, many=True).data
 
-
-
 ## Review
 class SurveySerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
     def get_questions(self, survey):
         return serializers.serialize('json', survey.questions.all())
+

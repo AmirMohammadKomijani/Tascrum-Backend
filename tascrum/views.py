@@ -394,18 +394,25 @@ class BurndownChartViewSet(ModelViewSet):
             data[item['date']].append(item['data'][0]) 
         return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())]) 
     
-    def retrieve(self, request, pk=None):
-        queryset = self.get_queryset().filter(board__id=pk)
-        serializer = self.get_serializer(queryset, many=True)
-        data = defaultdict(list)
-        for item in serializer.data:
-            data[item['date']].append(item['data'][0])
-        return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())])
-    
-    def update(self, request, pk=None):
-        burndown_chart = BurndownChart.objects.get(pk=pk)
-        serializer = CreateBurndownChartSerializer(burndown_chart, data=request.data)
+    def update(self, request, *args, **kwargs):
+        date = request.data.get('date')
+        member_id = request.data.get('member')
+        burndown_chart = self.get_queryset().filter(date=date, member__id=member_id).first()
+        if burndown_chart is None:
+            return Response({'error': 'No matching BurndownChart found.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(burndown_chart, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class BurndownChartSumViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, board_id=None, member_id=None):
+        queryset = BurndownChart.objects.filter(board__id=board_id, member__id=member_id)
+        done_sum = queryset.aggregate(Sum('done'))['done__sum']
+        estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
+        return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
+    
