@@ -505,18 +505,22 @@ class Internal_DnDSerializer(serializers.ModelSerializer):
                     card.order -= 1
                     card.save()
         elif instance.list != new_list:  # Check if the list is changed
-            cards_to_update = Card.objects.filter(list=instance.list, order__gt=instance.order)
-            for card in cards_to_update:
+            # Update order for cards in the old list
+            cards_to_update_old_list = Card.objects.filter(list=instance.list, order__gt=instance.order)
+            for card in cards_to_update_old_list:
                 card.order -= 1
                 card.save()
 
-            cards_to_update = Card.objects.filter(list=new_list, order__gte=new_order)
-            for card in cards_to_update:
+            # Update order for cards in the new list
+            cards_to_update_new_list = Card.objects.filter(list=new_list, order__gte=new_order)
+            for card in cards_to_update_new_list:
                 card.order += 1
                 card.save()
-                instance.list = new_list
+
         instance.order = new_order
+        instance.list = new_list
         instance.save()
+
         return instance
 
 
