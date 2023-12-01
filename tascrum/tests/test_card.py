@@ -10,12 +10,11 @@
 # from tascrum.models import *
 # from tascrum.views import CardView,CreateCardView,CardAssignmentView
 
-# CardAssignmentView
-# class cardTest(APITestCase, SimpleTestCase):
-#     def test_CardView_url(self):
-#         url = reverse("card-list")
-#         self.assertEqual(resolve(url).func.cls, CardView)
 
+class cardTest(APITestCase, SimpleTestCase):
+    def test_CardView_url(self):
+        url = reverse("card-list")
+        self.assertEqual(resolve(url).func.cls, CardView)
 
 #     def test_CardAssignmentView_url(self):
 #         url = reverse("assign-list")
