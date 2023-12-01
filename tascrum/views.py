@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from collections import defaultdict
+from django.db.models import Sum
 
 # Create your views here.
 
