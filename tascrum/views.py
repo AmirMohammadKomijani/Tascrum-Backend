@@ -395,6 +395,14 @@ class BurndownChartViewSet(ModelViewSet):
             data[item['date']].append(item['data'][0]) 
         return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())]) 
     
+    def retrieve(self, request, pk=None):
+        queryset = self.get_queryset().filter(board__id=pk)
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+        return Response([{'id': i+1, 'date': k, 'data': v} for i, (k, v) in enumerate(data.items())])
+    
     def update(self, request, *args, **kwargs):
         date = request.data.get('date')
         member_id = request.data.get('member')
