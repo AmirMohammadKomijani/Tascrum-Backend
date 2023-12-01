@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from collections import defaultdict
+from django.db.models import Sum
 
 # Create your views here.
 
@@ -411,7 +412,7 @@ class BurndownChartSumViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, board_id=None, member_id=None):
-        queryset = BurndownChart.objects.filter(board__id=board_id, member__id=member_id)
+        queryset = BurndownChart.objects.filter(board__id=board_id)
         done_sum = queryset.aggregate(Sum('done'))['done__sum']
         estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
         return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
