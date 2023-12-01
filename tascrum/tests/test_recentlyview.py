@@ -11,7 +11,7 @@ from Auth.models import User
 from tascrum.models import *
 from tascrum.views import *
 
-class BoardViewTest(APITestCase, SimpleTestCase):
+class RecentlyViewdViewTest(APITestCase, SimpleTestCase):
     def setUp(self):
         self.client = APIClient()
         user1 = User.objects.create_user(first_name='saba', last_name='razi',email='razi1.saba@gmail.com',\
