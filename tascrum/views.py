@@ -188,6 +188,7 @@ class CardView(ModelViewSet):
         return Card.objects.filter(list__in=list_id)
 
 class CreateCardView(ModelViewSet):
+    # allowed_methods = ('POST','HEAD','OPTIONS')
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
     def get_serializer_context(self):
