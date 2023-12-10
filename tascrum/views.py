@@ -58,6 +58,13 @@ class CreateWorkspaceView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
+class WorkspaceMembersView(ModelViewSet):
+    serializer_class = WorkspaceMemberSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Workspace.objects.filter(members = member_id)
 
 ### board view
 class BoardView(ModelViewSet):

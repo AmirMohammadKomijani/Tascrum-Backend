@@ -16,6 +16,7 @@ router.register('change',views.ChangePasswordView,basename='change')
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')
 router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
+router.register('workspace-members',views.CreateWorkspaceView,basename='workspace-members')
 
 ### board urls
 router.register('board',views.BoardView,basename='board')

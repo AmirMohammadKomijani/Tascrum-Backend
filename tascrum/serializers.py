@@ -73,6 +73,11 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','profimage','user']
 
+class WorkspaceMembersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workspace
+        fields = ['id','name','type','description','members']
+
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
