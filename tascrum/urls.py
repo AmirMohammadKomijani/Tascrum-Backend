@@ -63,5 +63,7 @@ router.register(r'burndown-chart-sum/(?P<board_id>\d+)', views.BurndownChartSumV
 ###Calender
 router.register('calender',views.CalenderView,basename='calender')
 
+###Chatbot
+router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 
 urlpatterns = router.urls

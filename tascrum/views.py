@@ -425,4 +425,43 @@ class BurndownChartSumViewSet(ModelViewSet):
         done_sum = queryset.aggregate(Sum('done'))['done__sum']
         estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
         return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
-    
+
+##chatbot
+class CardCSVViewSet(ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer  
+
+    def list(self, request, *args, **kwargs):
+        num = self.kwargs.get('pk')
+        print(num)
+        self.export_cards_to_csv(num)
+
+    def export_cards_to_csv(number):
+        print("hi")
+        file_path=f'./{number}.csv'
+        cards = Card.objects.all()
+
+        with open(file_path, 'w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile)
+
+            csv_writer.writerow(['ID', 'Title', 'List', 'Members', 'Start Date', 'Due Date', 'Description', 'Story Point', 'Set Estimate', 'Reminder', 'Order', 'Labels', 'Status'])
+
+            for card in cards:
+                members = ', '.join([member.name for member in card.members.all()])
+                labels = ', '.join([label.title for label in card.labels.all()])
+
+                csv_writer.writerow([
+                    card.id,
+                    card.title,
+                    card.list.title,
+                    members,
+                    card.startdate,
+                    card.duedate,
+                    card.description,
+                    card.storypoint,
+                    card.setestimate,
+                    card.reminder,
+                    card.order,
+                    labels,
+                    card.status,
+                ])
