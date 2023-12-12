@@ -59,11 +59,14 @@ router.register('label-tl',views.LabelTimelineView,basename='label-tl')
 
 ### burndown
 router.register('burndown-chart', views.BurndownChartViewSet, basename='burndown-chart')
+router.register('burndown-chart-estimate', views.BurndownChartEstimateViewSet, basename='burndown-chart-estimate')
 router.register(r'burndown-chart-sum/(?P<board_id>\d+)', views.BurndownChartSumViewSet, basename='burndown-chart-sum')
-router.register(r'burndown-chart-create/(?P<board_id>\d+)', views.BurndownCreateView, basename='burndown-chart-create')
+router.register(r'burndown-chart-create', views.BurndownCreateView, basename='burndown-chart-create')
 
 ###Calender
 router.register('calender',views.CalenderView,basename='calender')
 
 
 urlpatterns = router.urls
+
+
