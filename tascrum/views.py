@@ -58,6 +58,13 @@ class CreateWorkspaceView(ModelViewSet):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Workspace.objects.filter(members = member_id)
 
+class WorkspaceMembersView(ModelViewSet):
+    serializer_class = WorkspaceMemberSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Workspace.objects.filter(members = member_id)
 
 ### board view
 class BoardView(ModelViewSet):
@@ -181,6 +188,7 @@ class CardView(ModelViewSet):
         return Card.objects.filter(list__in=list_id)
 
 class CreateCardView(ModelViewSet):
+    # allowed_methods = ('POST','HEAD','OPTIONS')
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
     def get_serializer_context(self):
@@ -368,19 +376,8 @@ class CalenderView(ModelViewSet):
         boards = Board.objects.filter(members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
-
-
-
-class CreateBurndownChartView(ModelViewSet):
-    serializer_class = CreateBurndownChartSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        return BurndownChart.objects.filter(user = self.request.user.id)
   
-    
+### Burndown Chart View    
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
@@ -510,12 +507,12 @@ class BurndownChartSumViewSet(ModelViewSet):
     
 
 
-
 class BurndownCreateView(ModelViewSet):
     queryset = BurndownChart.objects.all()
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
-    @action(detail=True, methods=['post'], url_path='burndown-chart-create')
+
+    @action(detail=True, methods=['post'])
     def create_burndown(self, request, pk=None):
         board = get_object_or_404(Board, pk=pk)
         data = request.data
@@ -526,18 +523,21 @@ class BurndownCreateView(ModelViewSet):
         members = board.members.all()
         for current_date in (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)):
             for member in members:
-                BurndownChart.objects.create(
-                    board=board,
-                    member=member,
-                    date=current_date,
-                    done=0,
-                    estimate=0
-                )
+                burndown_data = {
+                    'board': board.id,
+                    'member': member.id,
+                    'date': current_date,
+                    'done': 0,
+                    'estimate': 0
+                }
+                serializer = self.get_serializer(data=burndown_data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_create(serializer)
 
         return Response({"message": "Burndown chart created successfully"}, status=status.HTTP_201_CREATED)
-    
 
-
+    def perform_create(self, serializer):
+        serializer.save()
 
 
 class BurndownChartEstimateViewSet(ModelViewSet):
