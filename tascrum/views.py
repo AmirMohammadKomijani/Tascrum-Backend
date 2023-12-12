@@ -386,8 +386,9 @@ class BurndownChartViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        board_id = self.kwargs.get('pk')
         user = self.request.user.id
-        return BurndownChart.objects.filter(board__members=user).order_by('date', 'member__id')
+        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -539,7 +540,82 @@ class BurndownCreateView(ModelViewSet):
 
 
 
+class BurndownChartEstimateViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        board_id = self.kwargs.get('pk')
+        user = self.request.user.id
+        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+
+        response_data = []
+        running_done_total = 0
+
+        for date, items in data.items():
+            done_sum = 0
+            estimate_sum = 0
+            processed_items = []
+            for item in items:
+                out_of_estimate = item['estimate'] - item['done']
+                item['out_of_estimate'] = out_of_estimate
+                done_sum += item['done']
+                estimate_sum += item['estimate']
+                processed_items.append(item) 
+            running_done_total += done_sum
+            date_dict = {
+                'date': date,
+                'act_rem': total_estimate - running_done_total,
+                'est_rem': total_estimate - estimate_sum
+            }
+            response_data.append(date_dict)
+            total_estimate -= estimate_sum 
+
+        return Response(response_data)
+
+    def retrieve(self, request, pk=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+
+        response_data = []
+        running_done_total = 0
+
+        for date, items in data.items():
+            done_sum = 0
+            estimate_sum = 0
+            processed_items = []
+            for item in items:
+                out_of_estimate = item['estimate'] - item['done']
+                item['out_of_estimate'] = out_of_estimate
+                done_sum += item['done']
+                estimate_sum += item['estimate']
+                processed_items.append(item)  
+            running_done_total += done_sum
+            date_dict = {
+                'date': date,
+                'act_rem': total_estimate - running_done_total,
+                'est_rem': total_estimate - estimate_sum
+            }
+            response_data.append(date_dict)
+            total_estimate -= estimate_sum 
+
+        return Response(response_data)
 
 
 
