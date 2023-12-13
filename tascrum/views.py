@@ -363,8 +363,8 @@ class LabelTimelineView(ModelViewSet):
 
 ### Meeting View
 
-class MeetingView(ModelViewSet):
-    serializer_class = MeetingSerializer
+class CreateMeetingView(ModelViewSet):
+    serializer_class = CreateMeetingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):

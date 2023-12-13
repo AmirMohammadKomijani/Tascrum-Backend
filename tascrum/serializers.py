@@ -654,7 +654,7 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 
 
 ## Meeting
-class MeetingSerializer(serializers.ModelSerializer):
+class CreateMeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = ['member','time']

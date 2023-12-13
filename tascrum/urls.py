@@ -30,11 +30,11 @@ router.register('star',views.BoardStarUpdate,basename='star')
 router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
-router.register('meeting',views.MeetingView,basename='meeting')
+# router.register('meeting',views.MeetingView,basename='meeting')
 
 nestedRouter.register(r'boards', BoardViewSet, basename='boards')
 meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
-meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+meeting_router.register(r'meetings', views.CreateMeetingView, basename='meetings')
 
 
 ### invite member to board
