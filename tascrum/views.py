@@ -378,8 +378,8 @@ class MeetingView(ModelViewSet):
     serializer_class = MeetingSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Meeting.objects.filter(members=member)
+        # member = Member.objects.get(user_id = self.request.user.id)
+        return Member.objects.filter(user_id = self.request.user.id,bmembers=self.kwargs['board_pk'])
 
 ### Calender View
 
@@ -392,7 +392,7 @@ class CalenderView(ModelViewSet):
 
     def get_queryset(self):
         member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(members = member)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
   

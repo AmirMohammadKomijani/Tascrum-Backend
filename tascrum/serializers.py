@@ -698,11 +698,11 @@ class MeetingSerializer(serializers.ModelSerializer):
     meetings = serializers.SerializerMethodField()
 
     class Meta:
-        model = Board
+        model = Member
         fields = ['id', 'meetings']
 
     def get_meetings(self, obj):
-        meetings = obj.mboard.all()
+        meetings = obj.Mmember.all()
         return CreateMeetingSerializer(meetings, many=True).data
 
 ### Calender

@@ -29,13 +29,13 @@ router.register('star',views.BoardStarUpdate,basename='star')
 router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
-router.register('meeting',views.MeetingView,basename='meeting')
+# router.register('meeting',views.MeetingView,basename='meeting')
 
 nestedRouter.register(r'boards', views.BoardViewSet, basename='boards')
 meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 meeting_router.register(r'crmeeting', views.CreateMeetingView, basename='create-meetings')
-# meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
-# meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
 
 
 ### invite member to board
@@ -72,9 +72,10 @@ router.register(r'burndown-chart-sum/(?P<board_id>\d+)', views.BurndownChartSumV
 router.register(r'burndown-chart-create', views.BurndownCreateView, basename='burndown-chart-create')
 
 ###Calender
-router.register('calender',views.CalenderView,basename='calender')
+# router.register('calender',views.CalenderView,basename='calender')
+calender_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+calender_router.register(r'calender', views.CalenderView, basename='calender')
 
-
-urlpatterns = router.urls + nestedRouter.urls + meeting_router.urls
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls
 
 
