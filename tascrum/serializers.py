@@ -654,10 +654,10 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 
 
 ## Meeting
-class MeetingSerializer(serializers.ModelSerializer):
+class CreateMeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
-        fields = ['member','time']
+        fields = ['id','member','time']
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -667,20 +667,41 @@ class MeetingSerializer(serializers.ModelSerializer):
 
         if MemberBoardRole.objects.filter(member=member,board=board).exists() and\
              MemberBoardRole.objects.filter(member=new_member, board=board).exists():
-            if not Meeting.objects.filter(member=member,board=board,time=time).exists():
-                Meeting.objects.create(member=member,board=board,time=time)
-            
-            
-            if not Meeting.objects.filter(member=member,board=board,time=time).exists():
-                return Meeting.objects.create(member=new_member,board=board,time=time)
+            if not Meeting.objects.filter(member=member,time=time).exists():
+                if not Meeting.objects.filter(member=member,board=board,time=time).exists():
+                    Meeting.objects.create(member=member,board=board,time=time)
             else:
-                raise serializers.ValidationError("this member is already added to this meeting")
+                raise serializers.ValidationError("you already have a meeting at this time.")
+                                
+            if not Meeting.objects.filter(member=new_member,time=time).exists():
+                if not Meeting.objects.filter(member=new_member,board=board,time=time).exists():
+                        return Meeting.objects.create(member=new_member,board=board,time=time)
+                else:
+                        raise serializers.ValidationError("this member is already added to this meeting.")
+            else:
+                x = Meeting.objects.filter(member=member,board=board,time=time)
+                x.delete()
+                raise serializers.ValidationError(" this user has another meeting at this time")                   
+
         else:
             raise serializers.ValidationError("these users are not in this board")
 
     
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    meetings = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Board
+        fields = ['id', 'meetings']
+
+    def get_meetings(self, obj):
+        meetings = obj.mboard.all()
+        return CreateMeetingSerializer(meetings, many=True).data
+
 ### Calender
 
 class CalenderSerializer(serializers.ModelSerializer):

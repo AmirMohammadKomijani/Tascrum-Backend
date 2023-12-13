@@ -363,8 +363,8 @@ class LabelTimelineView(ModelViewSet):
 
 ### Meeting View
 
-class MeetingView(ModelViewSet):
-    serializer_class = MeetingSerializer
+class CreateMeetingView(ModelViewSet):
+    serializer_class = CreateMeetingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
@@ -372,7 +372,14 @@ class MeetingView(ModelViewSet):
 
     def get_queryset(self):
         member = Member.objects.get(user_id = self.request.user.id)
-        return Meeting.objects.filter(member = member)
+        return Meeting.objects.filter(member = member,board=self.kwargs['board_pk'])
+
+class MeetingView(ModelViewSet):
+    serializer_class = MeetingSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Meeting.objects.filter(members=member)
 
 ### Calender View
 

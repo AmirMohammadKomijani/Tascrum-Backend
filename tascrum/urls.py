@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from tascrum.views import BoardViewSet
 ## when we use ModelViewSet we should implement urls with routers
 from rest_framework_nested import routers as nested
 from rest_framework import routers 
@@ -20,7 +19,7 @@ router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
 router.register('workspace-members',views.CreateWorkspaceView,basename='workspace-members')
 
 ### board urls
-router.register('board',BoardViewSet,basename='board')
+router.register('board',views.BoardViewSet,basename='board')
 router.register('board-bgimage',views.BoardImageView,basename='board-bgimage')
 router.register('boards-has-start',views.BoardStarView,basename='boards-has-start')
 router.register('board-star-update',views.BoardStarUpdate,basename='board-star-update')
@@ -32,9 +31,11 @@ router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentl
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
 router.register('meeting',views.MeetingView,basename='meeting')
 
-nestedRouter.register(r'boards', BoardViewSet, basename='boards')
+nestedRouter.register(r'boards', views.BoardViewSet, basename='boards')
 meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
-meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+meeting_router.register(r'crmeeting', views.CreateMeetingView, basename='create-meetings')
+# meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+# meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
 
 
 ### invite member to board
