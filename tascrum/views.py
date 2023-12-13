@@ -515,6 +515,7 @@ class BurndownCreateView(ModelViewSet):
     @action(detail=True, methods=['post'])
     def create_burndown(self, request, pk=None):
         board = get_object_or_404(Board, pk=pk)
+        BurndownChart.objects.filter(board=board).delete()
         data = request.data
         start_date = datetime.strptime(data['start'], '%Y-%m-%d').date()
         end_date = datetime.strptime(data['end'], '%Y-%m-%d').date()
