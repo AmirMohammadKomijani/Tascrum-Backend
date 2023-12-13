@@ -59,6 +59,13 @@ class MemberBoardRole(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
     role = models.CharField(max_length=50,default='member')
 
+
+class Meeting(models.Model):
+    member = models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Mmember')
+    board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='Mboard')
+    time = models.DateTimeField(null=False)
+
+
 class List(models.Model):
     title = models.CharField(max_length=255,null=False)
     board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')

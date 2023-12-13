@@ -653,6 +653,34 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 
 
 
+## Meeting
+class MeetingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meeting
+        fields = ['member','time']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        new_member = validated_data['member']
+        board = Board.objects.get(id = self.context['board_id'])
+        time = validated_data['time']
+
+        if MemberBoardRole.objects.filter(member=member,board=board).exists() and\
+             MemberBoardRole.objects.filter(member=new_member, board=board).exists():
+            if not Meeting.objects.filter(member=member,board=board,time=time).exists():
+                Meeting.objects.create(member=member,board=board,time=time)
+            
+            
+            if not Meeting.objects.filter(member=member,board=board,time=time).exists():
+                return Meeting.objects.create(member=new_member,board=board,time=time)
+            else:
+                raise serializers.ValidationError("this member is already added to this meeting")
+        else:
+            raise serializers.ValidationError("these users are not in this board")
+
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
 ### Calender
 
 class CalenderSerializer(serializers.ModelSerializer):
@@ -673,4 +701,6 @@ class SurveySerializer(serializers.ModelSerializer):
 
     def get_questions(self, survey):
         return serializers.serialize('json', survey.questions.all())
+
+
 

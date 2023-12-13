@@ -67,7 +67,7 @@ class WorkspaceMembersView(ModelViewSet):
         return Workspace.objects.filter(members = member_id)
 
 ### board view
-class BoardView(ModelViewSet):
+class BoardViewSet(ModelViewSet):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
 
@@ -361,6 +361,18 @@ class LabelTimelineView(ModelViewSet):
         return Board.objects.filter(id = board_id)
 
 
+### Meeting View
+
+class MeetingView(ModelViewSet):
+    serializer_class = MeetingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id,'board_id' : self.kwargs['board_pk']}
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Meeting.objects.filter(member = member)
 
 ### Calender View
 
