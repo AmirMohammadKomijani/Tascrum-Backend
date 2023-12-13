@@ -71,9 +71,9 @@ class BoardView(ModelViewSet):
         instance = self.get_object()
         instance.lastseen = datetime.now()
         instance.save()
-        
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
@@ -426,20 +426,21 @@ class BurndownChartSumViewSet(ModelViewSet):
         estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
         return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
 
-##chatbot
+# ##chatbot
 class CardCSVViewSet(ModelViewSet):
-    queryset = Card.objects.all()
-    serializer_class = CardSerializer  
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer  
 
     def list(self, request, *args, **kwargs):
         num = self.kwargs.get('pk')
         print(num)
         self.export_cards_to_csv(num)
-
+        print("ho")
+    
     def export_cards_to_csv(number):
         print("hi")
         file_path=f'./{number}.csv'
-        cards = Card.objects.all()
+        cards = Card.objects.filter(board__in=number)
 
         with open(file_path, 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
@@ -465,3 +466,4 @@ class CardCSVViewSet(ModelViewSet):
                     labels,
                     card.status,
                 ])
+    
