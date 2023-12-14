@@ -16,7 +16,11 @@ router.register('change',views.ChangePasswordView,basename='change')
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')
 router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
-router.register('workspace-members',views.CreateWorkspaceView,basename='workspace-members')
+# router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
+
+nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
+workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
+workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
 
 ### board urls
 router.register('board',views.BoardViewSet,basename='board')
@@ -76,6 +80,6 @@ router.register(r'burndown-chart-create', views.BurndownCreateView, basename='bu
 calender_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 calender_router.register(r'calender', views.CalenderView, basename='calender')
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
 
 
