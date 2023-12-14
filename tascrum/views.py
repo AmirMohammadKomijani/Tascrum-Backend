@@ -527,7 +527,8 @@ class ChatbotAPIView(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         request_message = serializer.validated_data.get('request_message')
 
-        response_data = {"ai_message": self.get_answer(self.kwargs.get('pk'), request_message)}
+        answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
+        response_data = {"ai_message": answer}
 
         return Response(response_data)
     
