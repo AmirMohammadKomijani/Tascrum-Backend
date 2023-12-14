@@ -6,4 +6,4 @@ def generate_invitation_link():
     random_string = ''.join(random.choice(letters) for i in range(10))
     return f"https://example.com/invitation/{random_string}"
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
