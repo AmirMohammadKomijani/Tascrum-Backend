@@ -673,7 +673,7 @@ class SurveySerializer(serializers.ModelSerializer):
 class CardLableChatbotSerialzier(serializers.ModelSerializer):
     class Meta:
         model = Lable
-        fields = ['color','title']
+        fields = ['title','color']
 class CardMemberChatbotSerializer(serializers.ModelSerializer):
     user = UserTimelineSerializer()
     class Meta:

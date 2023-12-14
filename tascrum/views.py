@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from collections import defaultdict
 from django.db.models import Sum
 import csv
+import webcolors
 # Create your views here.
 
 
@@ -430,7 +431,27 @@ class BurndownChartSumViewSet(ModelViewSet):
 class CardCSVViewSet(ModelViewSet):
     queryset = Card.objects.all()
     serializer_class = CardChatbotSerializer  
-
+    
+    @staticmethod
+    def closest_colour(hex_color):
+        requested_colour = webcolors.hex_to_rgb(hex_color)
+        min_colours = {}
+        for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
+            r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+            rd = (r_c - requested_colour[0]) ** 2
+            gd = (g_c - requested_colour[1]) ** 2
+            bd = (b_c - requested_colour[2]) ** 2
+            min_colours[(rd + gd + bd)] = name
+        return min_colours[min(min_colours.keys())]
+    @staticmethod
+    def get_colour_name(requested_colour):
+        try:
+            closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+        except ValueError:
+            closest_name = closest_colour(requested_colour)
+            actual_name = None
+        return actual_name, closest_name
+    
     def export_csv(self):
         number = self.kwargs.get('pk')
         file_path=f'./media/csv/{number}.csv'
@@ -457,7 +478,11 @@ class CardCSVViewSet(ModelViewSet):
 
             for row in serializer.data:
                 members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
-                labels_value = ', '.join([label.get('title', '') for label in row.get('labels', [])])
+                labels_value = [
+                        {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
+                        for label in row.get('labels', [])
+                    ]                
+                    
                 writer.writerow([
                     row.get('title', ''),
                     row.get('list', {}).get('title', ''),
