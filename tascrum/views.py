@@ -433,18 +433,45 @@ class CardCSVViewSet(ModelViewSet):
 
     def export_csv(self):
         number = self.kwargs.get('pk')
-        file_path=f'./{number}.csv'
+        file_path=f'./media/csv/{number}.csv'
         lists = List.objects.filter(board=number)
         queryset = Card.objects.filter(list__in = lists)
-        print("hi")
-        serializer = CardSerializer(queryset, many=True)
+        serializer = CardChatbotSerializer(queryset, many=True)
 
         with open(file_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(serializer.data[0].keys())
+            keys = [
+                        'title of card',
+                        'list of the card',
+                        'members of card',
+                        'labels of card',
+                        'start date of card',
+                        'due date of card',
+                        'reminder of card',
+                        'storypoint of card',
+                        'estimate of card',
+                        'description of card',
+                        'status of card'
+                        ]
+            writer.writerow(keys)
 
             for row in serializer.data:
-                writer.writerow(row.values())
+                members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
+                labels_value = ', '.join([label.get('title', '') for label in row.get('labels', [])])
+                writer.writerow([
+                    row.get('title', ''),
+                    row.get('list', {}).get('title', ''),
+                    members_value,
+                    labels_value,
+                    row.get('startdate', ''),
+                    row.get('duedate', ''),
+                    row.get('reminder', ''),
+                    row.get('storypoint', ''),
+                    row.get('setestimate', ''),
+                    row.get('description', ''),
+                    row.get('status', ''),
+                ])
+
     def get_queryset(self):
         self.export_csv()
         member_id = Member.objects.get(user_id = self.request.user.id)
