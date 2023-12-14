@@ -6,7 +6,7 @@ from rest_framework import routers
 
 
 nestedRouter = nested.DefaultRouter()
-router = routers.SimpleRouter()
+router = routers.DefaultRouter()
 
 ### account info urls
 router.register('profile',views.MemberProfileView,basename='profile')
@@ -16,10 +16,14 @@ router.register('change',views.ChangePasswordView,basename='change')
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')
 router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
-router.register('workspace-members',views.CreateWorkspaceView,basename='workspace-members')
+# router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
+
+nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
+workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
+workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
 
 ### board urls
-router.register('board',views.BoardView,basename='board')
+router.register('board',views.BoardViewSet,basename='board')
 router.register('board-bgimage',views.BoardImageView,basename='board-bgimage')
 router.register('boards-has-start',views.BoardStarView,basename='boards-has-start')
 router.register('board-star-update',views.BoardStarUpdate,basename='board-star-update')
@@ -29,6 +33,14 @@ router.register('star',views.BoardStarUpdate,basename='star')
 router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
+# router.register('meeting',views.MeetingView,basename='meeting')
+
+nestedRouter.register(r'boards', views.BoardViewSet, basename='boards')
+meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+meeting_router.register(r'meeting', views.CreateMeetingView, basename='meetings')
+# meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+# meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+
 
 ### invite member to board
 router.register('board-member',views.BoardMembersView,basename='board-member')
@@ -59,13 +71,17 @@ router.register('label-tl',views.LabelTimelineView,basename='label-tl')
 
 ### burndown
 router.register('burndown-chart', views.BurndownChartViewSet, basename='burndown-chart')
+router.register('burndown-chart-estimate', views.BurndownChartEstimateViewSet, basename='burndown-chart-estimate')
 router.register(r'burndown-chart-sum/(?P<board_id>\d+)', views.BurndownChartSumViewSet, basename='burndown-chart-sum')
-router.register(r'burndown-chart-create/(?P<board_id>\d+)', views.BurndownCreateView, basename='burndown-chart-create')
+router.register(r'burndown-chart-create', views.BurndownCreateView, basename='burndown-chart-create')
 
 ###Calender
-router.register('calender',views.CalenderView,basename='calender')
+# router.register('calender',views.CalenderView,basename='calender')
+calender_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+calender_router.register(r'calender', views.CalenderView, basename='calender')
+
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
 
 ###Chatbot
 router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 
-urlpatterns = router.urls

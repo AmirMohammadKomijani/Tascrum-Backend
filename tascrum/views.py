@@ -61,15 +61,15 @@ class CreateWorkspaceView(ModelViewSet):
         return Workspace.objects.filter(members = member_id)
 
 class WorkspaceMembersView(ModelViewSet):
-    serializer_class = WorkspaceMemberSerializer
+    serializer_class = WorkspaceMembersSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
-        return Workspace.objects.filter(members = member_id)
+        return Workspace.objects.filter(id = self.kwargs['workspace_pk'],members = member_id)
 
 ### board view
-class BoardView(ModelViewSet):
+class BoardViewSet(ModelViewSet):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
 
@@ -363,6 +363,25 @@ class LabelTimelineView(ModelViewSet):
         return Board.objects.filter(id = board_id)
 
 
+### Meeting View
+
+class CreateMeetingView(ModelViewSet):
+    serializer_class = CreateMeetingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id,'board_id' : self.kwargs['board_pk']}
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        return Meeting.objects.filter(member = member,board=self.kwargs['board_pk'])
+
+class MeetingView(ModelViewSet):
+    serializer_class = MeetingSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        # member = Member.objects.get(user_id = self.request.user.id)
+        return Member.objects.filter(user_id = self.request.user.id,bmembers=self.kwargs['board_pk'])
 
 ### Calender View
 
@@ -375,29 +394,19 @@ class CalenderView(ModelViewSet):
 
     def get_queryset(self):
         member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(members = member)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
-
-
-
-class CreateBurndownChartView(ModelViewSet):
-    serializer_class = CreateBurndownChartSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        return BurndownChart.objects.filter(user = self.request.user.id)
   
-    
+### Burndown Chart View    
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        board_id = self.kwargs.get('pk')
         user = self.request.user.id
-        return BurndownChart.objects.filter(board__members=user).order_by('date', 'member__id')
+        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -515,14 +524,15 @@ class BurndownChartViewSet(ModelViewSet):
     
 
 
-
 class BurndownCreateView(ModelViewSet):
     queryset = BurndownChart.objects.all()
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
-    @action(detail=True, methods=['post'], url_path='burndown-chart-create')
+
+    @action(detail=True, methods=['post'])
     def create_burndown(self, request, pk=None):
         board = get_object_or_404(Board, pk=pk)
+        BurndownChart.objects.filter(board=board).delete()
         data = request.data
         start_date = datetime.strptime(data['start'], '%Y-%m-%d').date()
         end_date = datetime.strptime(data['end'], '%Y-%m-%d').date()
@@ -531,16 +541,102 @@ class BurndownCreateView(ModelViewSet):
         members = board.members.all()
         for current_date in (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)):
             for member in members:
-                BurndownChart.objects.create(
-                    board=board,
-                    member=member,
-                    date=current_date,
-                    done=0,
-                    estimate=0
-                )
+                burndown_data = {
+                    'board': board.id,
+                    'member': member.id,
+                    'date': current_date,
+                    'done': 0,
+                    'estimate': 0
+                }
+                serializer = self.get_serializer(data=burndown_data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_create(serializer)
 
         return Response({"message": "Burndown chart created successfully"}, status=status.HTTP_201_CREATED)
     
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class BurndownChartEstimateViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        board_id = self.kwargs.get('pk')
+        user = self.request.user.id
+        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+
+        response_data = []
+        running_done_total = 0
+
+        for date, items in data.items():
+            done_sum = 0
+            estimate_sum = 0
+            processed_items = []
+            for item in items:
+                out_of_estimate = item['estimate'] - item['done']
+                item['out_of_estimate'] = out_of_estimate
+                done_sum += item['done']
+                estimate_sum += item['estimate']
+                processed_items.append(item) 
+            running_done_total += done_sum
+            date_dict = {
+                'date': date,
+                'act_rem': total_estimate - running_done_total,
+                'est_rem': total_estimate - estimate_sum
+            }
+            response_data.append(date_dict)
+            total_estimate -= estimate_sum 
+
+        return Response(response_data)
+
+    def retrieve(self, request, pk=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = defaultdict(list)
+
+        for item in serializer.data:
+            data[item['date']].append(item['data'][0])
+
+        response_data = []
+        running_done_total = 0
+
+        for date, items in data.items():
+            done_sum = 0
+            estimate_sum = 0
+            processed_items = []
+            for item in items:
+                out_of_estimate = item['estimate'] - item['done']
+                item['out_of_estimate'] = out_of_estimate
+                done_sum += item['done']
+                estimate_sum += item['estimate']
+                processed_items.append(item)  
+            running_done_total += done_sum
+            date_dict = {
+                'date': date,
+                'act_rem': total_estimate - running_done_total,
+                'est_rem': total_estimate - estimate_sum
+            }
+            response_data.append(date_dict)
+            total_estimate -= estimate_sum 
+
+        return Response(response_data)
+
+
+
 
 
 ##chatbot
@@ -617,3 +713,14 @@ class CardCSVViewSet(ModelViewSet):
         self.export_csv()
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Card.objects.filter(members = member_id)
+
+
+
+
+
+
+
+
+
+
+
