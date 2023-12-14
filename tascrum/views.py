@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
-from .utils import generate_invitation_link
+from .utils import generate_invitation_link,OPENAI_API_KEY
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
@@ -17,6 +17,13 @@ from collections import defaultdict
 from django.db.models import Sum
 import csv
 import webcolors
+
+from langchain.agents.agent_types import AgentType
+from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
+from langchain_experimental.agents.agent_toolkits import create_csv_agent
+from rest_framework.views import APIView
+
 # Create your views here.
 
 
@@ -501,3 +508,28 @@ class CardCSVViewSet(ModelViewSet):
         self.export_csv()
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Card.objects.filter(members = member_id)
+
+class ChatbotAPIView(ModelViewSet):
+    queryset = Chatbot.objects.all()
+    serializer_class = ChatbotRequestSerializer
+    # @staticmethod
+    def get_answer(self, number, request_message):
+        agent = create_csv_agent(
+        ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
+        f"./media/csv/{number}.csv",
+        verbose=True,
+        agent_type=AgentType.OPENAI_FUNCTIONS,)
+
+        return agent.run(request_message)
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChatbotRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request_message = serializer.validated_data.get('request_message')
+
+        response_data = {"ai_message": self.get_answer(self.kwargs.get('pk'), request_message)}
+
+        return Response(response_data)
+    
+    def get_queryset(self):
+        return Chatbot.objects.none()

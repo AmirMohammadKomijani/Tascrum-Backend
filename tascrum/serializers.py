@@ -691,3 +691,8 @@ class CardChatbotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ['title','list','members','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
+
+class ChatbotRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chatbot
+        fields = ['request_message']

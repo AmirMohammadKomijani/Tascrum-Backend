@@ -156,3 +156,7 @@ class Survey(models.Model):
 class SurveyQuestion(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+class Chatbot(models.Model):
+    request_message = models.CharField(max_length=500)
+     

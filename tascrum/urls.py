@@ -65,5 +65,6 @@ router.register('calender',views.CalenderView,basename='calender')
 
 ###Chatbot
 router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
+router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
 urlpatterns = router.urls
