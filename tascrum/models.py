@@ -63,6 +63,7 @@ class MemberBoardRole(models.Model):
 class Meeting(models.Model):
     member = models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Mmember')
     board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='mboard')
+    title = models.CharField(max_length=255,null=False,default='meeting')
     time = models.DateTimeField(null=False)
 
     class Meta:
