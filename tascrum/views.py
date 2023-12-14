@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
-from .utils import generate_invitation_link
+from .utils import generate_invitation_link,OPENAI_API_KEY
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.shortcuts import get_object_or_404
