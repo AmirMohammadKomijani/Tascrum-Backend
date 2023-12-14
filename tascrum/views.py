@@ -522,7 +522,30 @@ class BurndownChartViewSet(ModelViewSet):
 
         return Response(response_data)
     
+class BurndownChartSumViewSet(ModelViewSet):
+    serializer_class = CreateBurndownChartSerializer
+    permission_classes = [IsAuthenticated]
 
+    def list(self, request, *args, **kwargs):
+        board_id = self.kwargs.get('board_id', None)
+        queryset = BurndownChart.objects.filter(board__id=board_id).values(
+            'member'
+        ).annotate(
+            done_sum=Sum('done'),
+            estimate_sum=Sum('estimate'),
+            out_of_estimate_sum=Sum(F('estimate') - F('done'))  
+        ).order_by('member')
+        overall_done_sum = queryset.aggregate(Sum('done_sum'))['done_sum__sum'] or 0
+        overall_estimate_sum = queryset.aggregate(Sum('estimate_sum'))['estimate_sum__sum'] or 0
+        members_data = list(queryset)  
+
+        response_data = {
+            'members': members_data,
+            'done_total_sum': overall_done_sum,
+            'estimate_total_sum': overall_estimate_sum,
+        }
+
+        return Response(response_data)
 
 class BurndownCreateView(ModelViewSet):
     queryset = BurndownChart.objects.all()
