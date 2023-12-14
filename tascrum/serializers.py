@@ -658,7 +658,7 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 class CreateMeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
-        fields = ['id','member','time']
+        fields = ['id','member','title','time']
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
