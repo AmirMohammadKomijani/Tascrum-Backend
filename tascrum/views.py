@@ -15,7 +15,7 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from collections import defaultdict
 from django.db.models import Sum
-
+import csv
 # Create your views here.
 
 
@@ -71,9 +71,9 @@ class BoardView(ModelViewSet):
         instance = self.get_object()
         instance.lastseen = datetime.now()
         instance.save()
+        
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
@@ -426,44 +426,26 @@ class BurndownChartSumViewSet(ModelViewSet):
         estimate_sum = queryset.aggregate(Sum('estimate'))['estimate__sum']
         return Response({'done_sum': done_sum, 'estimate_sum': estimate_sum})
 
-# ##chatbot
+##chatbot
 class CardCSVViewSet(ModelViewSet):
-    queryset = Board.objects.all()
-    serializer_class = BoardSerializer  
+    queryset = Card.objects.all()
+    serializer_class = CardChatbotSerializer  
 
-    def list(self, request, *args, **kwargs):
-        num = self.kwargs.get('pk')
-        print(num)
-        self.export_cards_to_csv(num)
-        print("ho")
-    
-    def export_cards_to_csv(number):
-        print("hi")
+    def export_csv(self):
+        number = self.kwargs.get('pk')
         file_path=f'./{number}.csv'
-        cards = Card.objects.filter(board__in=number)
+        lists = List.objects.filter(board=number)
+        queryset = Card.objects.filter(list__in = lists)
+        print("hi")
+        serializer = CardSerializer(queryset, many=True)
 
         with open(file_path, 'w', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile)
+            writer = csv.writer(csvfile)
+            writer.writerow(serializer.data[0].keys())
 
-            csv_writer.writerow(['ID', 'Title', 'List', 'Members', 'Start Date', 'Due Date', 'Description', 'Story Point', 'Set Estimate', 'Reminder', 'Order', 'Labels', 'Status'])
-
-            for card in cards:
-                members = ', '.join([member.name for member in card.members.all()])
-                labels = ', '.join([label.title for label in card.labels.all()])
-
-                csv_writer.writerow([
-                    card.id,
-                    card.title,
-                    card.list.title,
-                    members,
-                    card.startdate,
-                    card.duedate,
-                    card.description,
-                    card.storypoint,
-                    card.setestimate,
-                    card.reminder,
-                    card.order,
-                    labels,
-                    card.status,
-                ])
-    
+            for row in serializer.data:
+                writer.writerow(row.values())
+    def get_queryset(self):
+        self.export_csv()
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Card.objects.filter(members = member_id)

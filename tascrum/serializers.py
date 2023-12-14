@@ -669,3 +669,27 @@ class SurveySerializer(serializers.ModelSerializer):
     def get_questions(self, survey):
         return serializers.serialize('json', survey.questions.all())
 
+## chatbot
+class CardMemberChatbotSerializer(serializers.ModelSerializer):
+    user = UserTimelineSerializer()
+    class Meta:
+        model = Member
+        fields = ['id','user']
+class ListChatbotSerializer(serializers.ModelSerializer):
+    card = serializers.SerializerMethodField()
+    class Meta:
+        model = List
+        fields = ['title']
+    
+class CardChatbotSerializer(serializers.ModelSerializer):
+    members = CardMemberChatbotSerializer(many=True)
+    labels = CardLableSerialzier(many=True)
+    list = ListChatbotSerializer()
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Card
+        fields = ['id','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
