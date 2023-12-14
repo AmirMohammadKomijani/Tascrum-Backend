@@ -82,6 +82,5 @@ calender_router.register(r'calender', views.CalenderView, basename='calender')
 
 urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
 
-###Chatbot
-# router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
+
 
