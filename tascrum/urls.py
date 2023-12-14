@@ -80,9 +80,10 @@ router.register(r'burndown-chart-create', views.BurndownCreateView, basename='bu
 calender_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 calender_router.register(r'calender', views.CalenderView, basename='calender')
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
-
 ###Chatbot
 router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
+
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
+
 
