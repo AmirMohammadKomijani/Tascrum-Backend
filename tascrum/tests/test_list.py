@@ -6,6 +6,8 @@ from Auth.models import User
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 
 
 
@@ -67,6 +69,13 @@ class TestCreateList(APITestCase):
         self.client = APIClient()
         self.List_url = reverse('crlist-list')
 
+        self.workspace = Workspace.objects.create(name = 'workspace test2',type = 'small business', description = 'description test', backgroundImage = '')
+        self.board = Board.objects.create(
+            title='board test',
+            backgroundImage = "",
+            workspace=self.workspace
+        )
+
     def authenticate(self):
         register_data = {
             'first_name':'test fname',
@@ -95,13 +104,6 @@ class TestCreateList(APITestCase):
         # Authenticate the user
         self.authenticate()
 
-        self.workspace = Workspace.objects.create(name = 'workspace test2',type = 'small business', description = 'description test', backgroundImage = '')
-        self.board = Board.objects.create(
-            title='board test',
-            backgroundImage = "",
-            workspace=self.workspace
-        )
-
         # Define the data you want to use for creating a new list
         create_list_data = {
             'title': 'New List',
@@ -129,71 +131,66 @@ class TestCreateList(APITestCase):
         }
         response = self.client.post(self.List_url, create_list_data, format='json')
         return response
-
+    
     # def test_Update_List_PUT(self):
-    #     # Authenticate the user
     #     self.authenticate()
 
-    #     self.workspace = Workspace.objects.create(name='workspace test2', type='small business', description='description test', backgroundImage='')
-    #     self.board = Board.objects.create(
-    #         title='board test',
-    #         backgroundImage="",
-    #         workspace=self.workspace
-    #     )
-
-    #     # Create a list to update
-    #     response_create = self.create_list('List to Update', board_id=self.board.id)
-
-    #     # Ensure the list is created successfully
-    #     self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
-
-    #     new_list_id = response_create.data['id']
-
-    #     # Define the data you want to use for updating the list
-    #     update_list_data = {
-    #         'title': 'Updated List',
-    #         'board': self.board.id,
+    #     create_list_data = {
+    #         'title':'board test',
+    #         'backgroundImage' : "",
+    #         'workspace':self.workspace.id
     #     }
 
-    #     url = f'/lists/{new_list_id}/'
-    #     # print(f'Constructed URL for PUT: {url}')
+    #     resp = self.client.post(reverse('crboard-list'), create_list_data)        
+    #     response=resp.json()
+    #     board_id = response['id']
 
-    #     # Send a PUT request to update the list
-    #     response_update = self.client.put(url, update_list_data, format='json')
+    #     create_list_data = {
+    #         'title': 'New List',
+    #         'board': board_id,  # Assuming you have a board instance available
+    #     }
+    #         # Send a POST request to create a new workspace
+    #     resp = self.client.post(self.List_url, create_list_data)        
+    #     response=resp.json()
+    #     id=response['id']
+    #     id_to_update = response.get('id')
+    
+    #     # Print debug information
+    #     print(f"Created List ID: {id_to_update}")
 
-    #     # Check if the response status code is 200 (OK)
-    #     self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+    #     # Check if the list exists before attempting the update
+    #     try:
+    #         list_to_update = get_object_or_404(List, pk=id_to_update)
+    #         print(f"List found before update: {list_to_update}")
+    #     except Http404:
+    #         print(f"List not found with ID: {id_to_update}")
 
-    #     # Optionally, you can check the response data for additional details
-    #     self.assertEqual(response_update.data['title'], 'Updated List')
-    #     self.assertEqual(response_update.data['board'], self.board.id)
+    #     data_update = {
+    #         'title': 'New List change',
+    #         'board': self.board.id,  # Assuming you have a board instance available
+    #     }
+
+    #     url = reverse('crlist-detail', kwargs={'pk': id})
+    #     resp = self.client.put(url, data_update)
+    #     self.assertEqual(resp.status_code, 200)
+
 
     # def test_Delete_List_DELETE(self):
-    #     # Authenticate the user
     #     self.authenticate()
-    #     self.workspace = Workspace.objects.create(name='workspace test2', type='small business', description='description test', backgroundImage='')
-    #     self.board = Board.objects.create(
-    #         title='board test',
-    #         backgroundImage="",
-    #         workspace=self.workspace
-    #     )
-    #     # Create a list to delete
-    #     response_create = self.create_list('List to Delete', board_id=self.board.id)
 
-    #     # Ensure the list is created successfully
-    #     self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+    #     create_list_data = {
+    #         'title': 'New List',
+    #         'board': self.board.id,  # Assuming you have a board instance available
+    #     }
+    #         # Send a POST request to create a new workspace
+    #     resp = self.client.post(self.List_url, create_list_data)        
+    #     response=resp.json()
+    #     id=response['id']
 
-    #     new_list_id = response_create.data['id']
+    #     url = reverse('crlist-detail', kwargs={'pk': id})
+    #     resp = self.client.delete(url)
+    #     self.assertEqual(resp.status_code,  status.HTTP_204_NO_CONTENT)
 
-    #     # Send a DELETE request to delete the list
-    #     response_delete = self.client.delete(f'/lists/{new_list_id}/')
-
-    #     # Check if the response status code is 204 (No Content)
-    #     self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
-
-    #     # Optionally, you can check if the list is actually deleted from the database
-    #     with self.assertRaises(List.DoesNotExist):
-    #         deleted_list = List.objects.get(pk=new_list_id)
 
 class TestUrls(APITestCase):
 

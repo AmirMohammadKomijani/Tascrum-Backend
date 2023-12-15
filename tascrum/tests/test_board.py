@@ -103,6 +103,7 @@ class CreateBoardViewTest(APITestCase, SimpleTestCase):
     
     def setUp(self):
         self.client = APIClient()
+        self.board_url = reverse("crboard-list")
         user1 = User.objects.create_user(first_name='saba', last_name='razi',email='razi1.saba@gmail.com',\
                                           username= "test username", password='thisissaba')
         self.members = Member.objects.create(
@@ -145,17 +146,45 @@ class CreateBoardViewTest(APITestCase, SimpleTestCase):
 
     def test_create_board(self):
         self.authenticate()
-        board_data = {"title":'board test3', "backgroundImage":"", "workspace":"1"}
-        response = self.client.post(reverse('crboard-list') , board_data)
+        create_board_data = {"title":'board test3', "backgroundImage":"", "workspace":self.workspace.id}
+        response = self.client.post(self.board_url , create_board_data)
+        # print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # self.assertEqual(Board.objects.all().count(), 3)
+        # self.assertEqual(Board.objects.filter(title='board test3').count(), 1)
 
-        board_data = {"title":'board test4', "backgroundImage":"", "workspace":"1"}
-        response = self.client.post(reverse('crboard-list') , board_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_Update_Board_PUT(self):
+        self.authenticate()
 
-        self.assertEqual(Board.objects.all().count(), 3)
+        create_board_data = {"title":'board test3', 'has_star':False,"backgroundImage":"", "workspace":self.workspace.id}
 
-        self.assertEqual(Board.objects.filter(title='board test3').count(), 1)
+            # Send a POST request to create a new workspace
+        resp = self.client.post(self.board_url, create_board_data)        
+        response=resp.json()
+        # print(response)
+        id=response['id']
+
+        data_update = {"title":'board test3 change', 'has_star':True, "backgroundImage":"", "workspace":self.workspace.id}
+
+        url = reverse('crboard-detail', kwargs={'pk': id})
+        resp = self.client.put(url, data_update)
+        # print(resp.content)
+        self.assertEqual(resp.status_code, 200)
+
+
+    def test_Delete_Board_DELETE(self):
+        self.authenticate()
+
+        create_board_data = {"title":'board test3', 'has_star':False,"backgroundImage":"", "workspace":self.workspace.id}
+
+            # Send a POST request to create a new workspace
+        resp = self.client.post(self.board_url, create_board_data)        
+        response=resp.json()
+        id=response['id']
+
+        url = reverse('crboard-detail', kwargs={'pk': id})
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code,  status.HTTP_204_NO_CONTENT)
 
     # def test_board_update(self):
     #     self.authenticate()

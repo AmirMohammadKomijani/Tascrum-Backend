@@ -11,7 +11,7 @@ from .models import *
 from Auth.models import User
 from .utils import generate_invitation_link,OPENAI_API_KEY
 from rest_framework.permissions import IsAuthenticated
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 from collections import defaultdict
 from django.db.models import Sum, F
@@ -529,6 +529,8 @@ class BurndownChartViewSet(ModelViewSet):
 
         return Response(response_data)
     
+    
+
 class BurndownChartSumViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
