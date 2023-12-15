@@ -129,6 +129,35 @@ class TestCreateList(APITestCase):
         }
         response = self.client.post(self.List_url, create_list_data, format='json')
         return response
+    
+    def test_Update_List_PUT(self):
+        self.authenticate()
+
+        self.workspace = Workspace.objects.create(name = 'workspace test2',type = 'small business', description = 'description test', backgroundImage = '')
+        self.board = Board.objects.create(
+            title='board test',
+            backgroundImage = "",
+            workspace=self.workspace
+        )
+
+        # Define the data you want to use for creating a new list
+        create_list_data = {
+            'title': 'New List',
+            'board': self.board.id,  # Assuming you have a board instance available
+        }
+
+            # Send a POST request to create a new list
+        resp = self.client.post(self.List_url, create_list_data, format='json')        
+        response=resp.json()
+        id=response['id']
+
+        data_update={         
+            'title': 'New List with new board',
+            'board': self.board.id + 1
+        }
+        url = reverse('crlist-detail', kwargs={'pk': id})
+        resp = self.client.put(url, data_update, format='json')
+        self.assertEqual(resp.status_code, 200)
 
     # def test_Update_List_PUT(self):
     #     # Authenticate the user
