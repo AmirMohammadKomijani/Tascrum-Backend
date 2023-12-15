@@ -117,7 +117,7 @@ class TestCreateWorkspaceView(APITestCase):
         # Optionally, you can check if the new workspace is actually created in the database
         new_workspace = Workspace.objects.get(name='workspace test2', type='small business', description='description test')
         self.assertIsNotNone(new_workspace)
-    
+
     def test_Update_Workspace_PUT(self):
         self.authenticate()
 
