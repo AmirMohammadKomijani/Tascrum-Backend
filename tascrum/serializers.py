@@ -661,12 +661,13 @@ class CreateMeetingSerializer(serializers.ModelSerializer):
         new_member = validated_data['member']
         board = Board.objects.get(id = self.context['board_id'])
         time = validated_data['time']
+        title = validated_data['title']
 
         if MemberBoardRole.objects.filter(member=member,board=board).exists() and\
              MemberBoardRole.objects.filter(member=new_member, board=board).exists():
             if not Meeting.objects.filter(member=member,time=time).exists():
                 if not Meeting.objects.filter(member=member,board=board,time=time).exists():
-                    Meeting.objects.create(member=member,board=board,time=time)
+                    Meeting.objects.create(member=member,board=board,time=time,title = title)
             # else:
             #     if not Meeting.objects.filter(member=member,board=board,time=time).exists():
             #         Meeting.objects.create(member=member,board=board,time=time)
@@ -675,7 +676,7 @@ class CreateMeetingSerializer(serializers.ModelSerializer):
                                 
             if not Meeting.objects.filter(member=new_member,time=time).exists():
                 if not Meeting.objects.filter(member=new_member,board=board,time=time).exists():
-                        return Meeting.objects.create(member=new_member,board=board,time=time)
+                        return Meeting.objects.create(member=new_member,board=board,time=time,title = title)
                 else:
                         raise serializers.ValidationError("this member is already added to this meeting.")
             else:
