@@ -283,7 +283,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['duedate'] = timezone.now()    
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(card)
+        # MemberCardRole.objects.create(card)
         return card
     
     def update(self, instance, validated_data):
