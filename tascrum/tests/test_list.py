@@ -142,10 +142,7 @@ class TestCreateList(APITestCase):
             # Send a POST request to create a new workspace
         resp = self.client.post(self.List_url, create_list_data)        
         response=resp.json()
-        print(response)
-        print(response['id'])
         id=response['id']
-        print(id)
 
         data_update = {
             'title': 'New List change',
