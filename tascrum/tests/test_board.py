@@ -8,13 +8,13 @@ from rest_framework.test import APIClient
 
 from Auth.models import User
 from tascrum.models import Member, Board, MemberBoardRole, Workspace
-from tascrum.views import BoardView, BoardMembersView, CreateBoardView, BoardImageView, BoardImageView
+from tascrum.views import BoardViewSet, BoardMembersView, CreateBoardView, BoardImageView, BoardImageView
 
 
 class BoardViewTest(APITestCase, SimpleTestCase):
     def test_board_url(self):
         url = reverse("board-list")
-        self.assertEqual(resolve(url).func.cls, BoardView)
+        self.assertEqual(resolve(url).func.cls, BoardViewSet)
 
     def setUp(self):
         self.client = APIClient()
