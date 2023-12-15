@@ -117,7 +117,29 @@ class TestCreateWorkspaceView(APITestCase):
         # Optionally, you can check if the new workspace is actually created in the database
         new_workspace = Workspace.objects.get(name='workspace test2', type='small business', description='description test')
         self.assertIsNotNone(new_workspace)
+        
+    def test_Update_Workspace_PUT(self):
+        self.authenticate()
 
+        create_workspace_data = {
+                'name': 'workspace test2',
+                'type': 'small business',
+                'description': 'description test',
+            }
+
+            # Send a POST request to create a new workspace
+        resp = self.client.post(self.workspace_url, create_workspace_data, format='json')        
+        response=resp.json()
+        id=response['id']
+
+        data_update={         
+                'name': 'workspace test2 change',
+                'type': 'small business',
+                'description': 'description test change',
+        }
+        url = reverse('crworkspace-detail', kwargs={'pk': id})
+        resp = self.client.put(url, data_update, format='json')
+        self.assertEqual(resp.status_code, 200)
 
 class TestUrls(APITestCase):
 
