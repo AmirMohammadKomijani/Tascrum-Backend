@@ -137,7 +137,8 @@ class TestCreateWorkspaceView(APITestCase):
                 'type': 'small business',
                 'description': 'description test change',
         }
-        resp = self.client.put(f"crworkspace/{id}/",data_update)
+        url = reverse('crworkspace-detail', kwargs={'pk': id})
+        resp = self.client.put(url, data_update, format='json')
         self.assertEqual(resp.status_code, 200)
 
 class TestUrls(APITestCase):
