@@ -287,13 +287,9 @@ class CreateCardSerializer(serializers.ModelSerializer):
         fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description','status']
 
     def create(self, validated_data):
-        # owner = Member.objects.get(user_id = self.context['user_id'])
-        # board_role = MemberBoardRole.objects.filter(member = owner).first()
-
-        # if board_role.role == "owner":
         validated_data['duedate'] = timezone.now()    
         card = Card.objects.create(**validated_data)
-        MemberCardRole.objects.create(card)
+        # MemberCardRole.objects.create(card)
         return card
     
     def update(self, instance, validated_data):
