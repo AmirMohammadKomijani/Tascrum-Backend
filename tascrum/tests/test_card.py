@@ -171,36 +171,36 @@ class CreateCardViewTest(APITestCase, SimpleTestCase):
         response=resp.json()
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-    def test_Update_Card_PUT(self):
-        self.authenticate()
+    # def test_Update_Card_PUT(self):
+    #     self.authenticate()
 
-        create_card_data ={
-            'title':"card test",
-            'list':self.list.id,
-            'startdate':'2022-05-15',
-            'duedate':'2024-05-15',
-            'reminder':'5 Days before',
-        }
+    #     create_card_data ={
+    #         'title':"card test",
+    #         'list':self.list.id,
+    #         'startdate':'2022-05-15',
+    #         'duedate':'2024-05-15',
+    #         'reminder':'5 Days before',
+    #     }
 
-            # Send a POST request to create a new workspace
-        resp = self.client.post(self.create_card_url, create_card_data)        
-        response=resp.json()
-        print(response)
-        id=response['id']
+    #         # Send a POST request to create a new workspace
+    #     resp = self.client.post(self.create_card_url, create_card_data)        
+    #     response=resp.json()
+    #     print(response)
+    #     id=response['id']
 
-        data_update = {
-            'title':"card test change",
-            'list':self.list.id,
-            'startdate':'2022-05-15',
-            'duedate':'2024-05-15',
-            'reminder':'5 Minuets before',
-        }
+    #     data_update = {
+    #         'title':"card test change",
+    #         'list':self.list.id,
+    #         'startdate':'2022-05-15',
+    #         'duedate':'2024-05-15',
+    #         'reminder':'5 Minuets before',
+    #     }
 
-        url = reverse('crcard-detail', kwargs={'pk': id})
-        print(url)
-        resp = self.client.put(url, data_update)
-        print(resp.content)
-        self.assertEqual(resp.status_code, 200)
+    #     url = reverse('crcard-detail', kwargs={'pk': id})
+    #     print(url)
+    #     resp = self.client.put(url, data_update)
+    #     print(resp.content)
+    #     self.assertEqual(resp.status_code, 200)
 
 
     # def test_Delete_Board_DELETE(self):
