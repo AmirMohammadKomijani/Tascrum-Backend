@@ -11,7 +11,6 @@ from tascrum.views import MemberProfileView, ChangePasswordView
 
 
 class changepasswordTest(APITestCase , SimpleTestCase):
-    
     def test_changepassword_url(self):
         url = reverse("change-list")
         self.assertEqual(resolve(url).func.cls, ChangePasswordView)
@@ -103,7 +102,8 @@ class ProfileTest(changepasswordTest):
     #     }))
     
     # def test_update_profile(self):
-    #     response = self.authenticate()
+    #     response = self.create_member()
+    #     # response = self.authenticate()
     #     updated_data = {
     #         'occupations': 'Student',
     #         'bio': 'Updated bio',

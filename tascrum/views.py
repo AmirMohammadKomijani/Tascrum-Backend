@@ -611,6 +611,27 @@ class BurndownChartViewSet(ModelViewSet):
     
     
 
+    def list(self, request, *args, **kwargs):
+        board_id = self.kwargs.get('board_id', None)
+        queryset = BurndownChart.objects.filter(board__id=board_id).values(
+            'member'
+        ).annotate(
+            done_sum=Sum('done'),
+            estimate_sum=Sum('estimate'),
+            out_of_estimate_sum=Sum(F('estimate') - F('done'))  
+        ).order_by('member')
+        overall_done_sum = queryset.aggregate(Sum('done_sum'))['done_sum__sum'] or 0
+        overall_estimate_sum = queryset.aggregate(Sum('estimate_sum'))['estimate_sum__sum'] or 0
+        members_data = list(queryset)  
+
+        response_data = {
+            'members': members_data,
+            'done_total_sum': overall_done_sum,
+            'estimate_total_sum': overall_estimate_sum,
+        }
+
+        return Response(response_data)
+    
 class BurndownChartSumViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
@@ -635,8 +656,6 @@ class BurndownChartSumViewSet(ModelViewSet):
         }
 
         return Response(response_data)
-    
-
 
 class BurndownCreateView(ModelViewSet):
     queryset = BurndownChart.objects.all()
@@ -667,7 +686,7 @@ class BurndownCreateView(ModelViewSet):
                 self.perform_create(serializer)
 
         return Response({"message": "Burndown chart created successfully"}, status=status.HTTP_201_CREATED)
-
+    
     def perform_create(self, serializer):
         serializer.save()
 
@@ -753,8 +772,103 @@ class BurndownChartEstimateViewSet(ModelViewSet):
 
 
 
+### chatbot
+# class CardCSVViewSet(ModelViewSet):
+#     queryset = Card.objects.all()
+#     serializer_class = CardChatbotSerializer  
+    
+#     @staticmethod
+#     def closest_colour(hex_color):
+#         requested_colour = webcolors.hex_to_rgb(hex_color)
+#         min_colours = {}
+#         for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
+#             r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+#             rd = (r_c - requested_colour[0]) ** 2
+#             gd = (g_c - requested_colour[1]) ** 2
+#             bd = (b_c - requested_colour[2]) ** 2
+#             min_colours[(rd + gd + bd)] = name
+#         return min_colours[min(min_colours.keys())]
+#     @staticmethod
+#     def get_colour_name(requested_colour):
+#         try:
+#             closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+#         except ValueError:
+#             closest_name = closest_colour(requested_colour)
+#             actual_name = None
+#         return actual_name, closest_name
+    
+#     def export_csv(self):
+#         number = self.kwargs.get('pk')
+#         file_path=f'./media/csv/{number}.csv'
+#         lists = List.objects.filter(board=number)
+#         queryset = Card.objects.filter(list__in = lists)
+#         serializer = CardChatbotSerializer(queryset, many=True)
 
+#         with open(file_path, 'w', newline='') as csvfile:
+#             writer = csv.writer(csvfile)
+#             keys = [
+#                         'title of card',
+#                         'list of the card',
+#                         'members of card',
+#                         'labels of card',
+#                         'start date of card',
+#                         'due date of card',
+#                         'reminder of card',
+#                         'storypoint of card',
+#                         'estimate of card',
+#                         'description of card',
+#                         'status of card'
+#                         ]
+#             writer.writerow(keys)
 
+#             for row in serializer.data:
+#                 members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
+#                 labels_value = [
+#                         {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
+#                         for label in row.get('labels', [])
+#                     ]                
+                    
+#                 writer.writerow([
+#                     row.get('title', ''),
+#                     row.get('list', {}).get('title', ''),
+#                     members_value,
+#                     labels_value,
+#                     row.get('startdate', ''),
+#                     row.get('duedate', ''),
+#                     row.get('reminder', ''),
+#                     row.get('storypoint', ''),
+#                     row.get('setestimate', ''),
+#                     row.get('description', ''),
+#                     row.get('status', ''),
+#                 ])
 
+#     def get_queryset(self):
+#         self.export_csv()
+#         member_id = Member.objects.get(user_id = self.request.user.id)
+#         return Card.objects.filter(members = member_id)
 
+# class ChatbotAPIView(ModelViewSet):
+#     queryset = Chatbot.objects.all()
+#     serializer_class = ChatbotRequestSerializer
+#     # @staticmethod
+#     def get_answer(self, number, request_message):
+#         agent = create_csv_agent(
+#         ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
+#         f"./media/csv/{number}.csv",
+#         verbose=True,
+#         agent_type=AgentType.OPENAI_FUNCTIONS,)
 
+#         return agent.run(request_message)
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = ChatbotRequestSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         request_message = serializer.validated_data.get('request_message')
+
+#         answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
+#         response_data = {"ai_message": answer}
+
+#         return Response(response_data)
+    
+#     def get_queryset(self):
+#         return Chatbot.objects.none()
