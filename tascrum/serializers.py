@@ -74,9 +74,10 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
         fields = ['id','profimage','user']
 
 class WorkspaceMembersSerializer(serializers.ModelSerializer):
+    members = WorkspaceMemberSerializer(many=True)
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','members']
+        fields = ['id','members']
 
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
@@ -653,6 +654,58 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 
 
 
+## Meeting
+class CreateMeetingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meeting
+        fields = ['id','member','title','time']
+
+    def create(self, validated_data):
+        member = Member.objects.get(user_id = self.context['user_id'])
+        new_member = validated_data['member']
+        board = Board.objects.get(id = self.context['board_id'])
+        time = validated_data['time']
+
+        if MemberBoardRole.objects.filter(member=member,board=board).exists() and\
+             MemberBoardRole.objects.filter(member=new_member, board=board).exists():
+            if not Meeting.objects.filter(member=member,time=time).exists():
+                if not Meeting.objects.filter(member=member,board=board,time=time).exists():
+                    Meeting.objects.create(member=member,board=board,time=time)
+            # else:
+            #     if not Meeting.objects.filter(member=member,board=board,time=time).exists():
+            #         Meeting.objects.create(member=member,board=board,time=time)
+            #     else:
+            #         raise serializers.ValidationError("you already have a meeting at this time.")
+                                
+            if not Meeting.objects.filter(member=new_member,time=time).exists():
+                if not Meeting.objects.filter(member=new_member,board=board,time=time).exists():
+                        return Meeting.objects.create(member=new_member,board=board,time=time)
+                else:
+                        raise serializers.ValidationError("this member is already added to this meeting.")
+            else:
+                x = Meeting.objects.filter(member=member,board=board,time=time)
+                x.delete()
+                raise serializers.ValidationError(" this user has another meeting at this time")                   
+
+        else:
+            raise serializers.ValidationError("these users are not in this board")
+
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    meetings = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Member
+        fields = ['id', 'meetings']
+
+    def get_meetings(self, obj):
+        meetings = obj.Mmember.all()
+        return CreateMeetingSerializer(meetings, many=True).data
+
 ### Calender
 
 class CalenderSerializer(serializers.ModelSerializer):
@@ -674,3 +727,30 @@ class SurveySerializer(serializers.ModelSerializer):
     def get_questions(self, survey):
         return serializers.serialize('json', survey.questions.all())
 
+## chatbot
+class CardLableChatbotSerialzier(serializers.ModelSerializer):
+    class Meta:
+        model = Lable
+        fields = ['title','color']
+class CardMemberChatbotSerializer(serializers.ModelSerializer):
+    user = UserTimelineSerializer()
+    class Meta:
+        model = Member
+        fields = ['user']
+class ListChatbotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['title']
+    
+class CardChatbotSerializer(serializers.ModelSerializer):
+    members = CardMemberChatbotSerializer(many=True)
+    labels = CardLableChatbotSerialzier(many=True)
+    list = ListChatbotSerializer()
+    class Meta:
+        model = Card
+        fields = ['title','list','members','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
+
+class ChatbotRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chatbot
+        fields = ['request_message']

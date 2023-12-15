@@ -59,6 +59,18 @@ class MemberBoardRole(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE,related_name='brole')
     role = models.CharField(max_length=50,default='member')
 
+
+class Meeting(models.Model):
+    member = models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Mmember')
+    board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='mboard')
+    title = models.CharField(max_length=255,null=False,default='meeting')
+    time = models.DateTimeField(null=False)
+
+    class Meta:
+        ordering = ['time']
+        # unique_together = ('board', 'time',)
+
+
 class List(models.Model):
     title = models.CharField(max_length=255,null=False)
     board = models.ForeignKey(Board,on_delete=models.CASCADE,related_name='lboard')
@@ -133,9 +145,6 @@ class MemberCardRole(models.Model):
     role = models.CharField(max_length=50,default='member')
     class Meta:
         ordering = ['member']
-
-    class Meta:
-        ordering = ['member']
     
 class BurndownChart(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='burndown_charts')
@@ -156,3 +165,7 @@ class Survey(models.Model):
 class SurveyQuestion(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+class Chatbot(models.Model):
+    request_message = models.CharField(max_length=500)
+     
