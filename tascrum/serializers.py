@@ -280,7 +280,7 @@ class CardSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     class Meta:
         model = Card
-        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status']
+        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status','comment']
 
     def get_role(self, obj):
         roles = obj.crole.all()
@@ -290,7 +290,7 @@ class CardSerializer(serializers.ModelSerializer):
 class CreateCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description','status']
+        fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description','status', 'comment']
 
     def create(self, validated_data):
         owner = Member.objects.get(user_id = self.context['user_id'])
@@ -310,7 +310,7 @@ class CreateCardSerializer(serializers.ModelSerializer):
         instance.storypoint = validated_data.get('storypoint', instance.storypoint)
         instance.setestimate = validated_data.get('setestimate', instance.setestimate)
         instance.description = validated_data.get('description', instance.description)
-        
+        instance.comment = validated_data.get('comment', instance.comment)
         if instance.duedate < timezone.now():
             instance.status = validated_data.get('status', instance.status)
             instance.status = "overdue"

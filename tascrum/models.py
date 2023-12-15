@@ -100,7 +100,7 @@ class Card(models.Model):
     reminder = models.CharField(max_length=30,choices=reminder_choice , default='1 Day before')
     order = models.IntegerField(null=True,auto_created=True)
     labels = models.ManyToManyField(Lable, through='CardLabel', related_name='clabel')
-
+    comment = models.CharField(max_length=255,null=True)
     status_choice = (
     ('Done','Done'),
     ('overdue','overdue'),
