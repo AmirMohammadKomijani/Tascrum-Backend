@@ -27,7 +27,8 @@ import csv
 from rest_framework.views import APIView
 # import webcolors
 # Create your views here.
-
+import django_filters
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, DateTimeFilter
 
 ### Profile view
 class MemberProfileView(ModelViewSet):
@@ -874,3 +875,22 @@ class BurndownChartEstimateViewSet(ModelViewSet):
     
 #     def get_queryset(self):
 #         return Chatbot.objects.none()
+
+
+class BoardFilter(FilterSet):
+    title = django_filters.CharFilter(lookup_expr='icontains')
+    has_star = BooleanFilter()
+    lastseen = DateTimeFilter()
+
+    class Meta:
+        model = Board
+        fields = ['title', 'has_star', 'lastseen']
+
+class BoardfilterView(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = BoardFilter
+    filterset_fields = ['title', 'has_star', 'lastseen']
+    ordering_fields = ['title', 'has_star', 'lastseen']

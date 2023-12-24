@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "tascrum",
     "djoser",
     "corsheaders",
+    "django_filters",
 ]
 
 MIDDLEWARE = [

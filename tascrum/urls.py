@@ -34,6 +34,7 @@ router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
 # router.register('meeting',views.MeetingView,basename='meeting')
+router.register('board-filter',views.BoardfilterView,basename='board-filter')
 
 nestedRouter.register(r'boards', views.BoardViewSet, basename='boards')
 meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
