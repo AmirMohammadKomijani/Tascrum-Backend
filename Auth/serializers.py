@@ -15,7 +15,6 @@ class UserProfileSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
         fields = ['first_name', 'last_name' , 'email' , 'username']
 
-
 class UserTimelineSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
         fields = ['username']

@@ -14,6 +14,10 @@ pillow = "*"
 django-mysql = "*"
 drf-nested-routers = "*"
 djoser = "*"
+langchain = "*"
+openai = "*"
+streamlit = "*"
+tabulate = "*"
 
 [dev-packages]
 
