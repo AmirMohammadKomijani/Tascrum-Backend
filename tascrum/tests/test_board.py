@@ -15,6 +15,7 @@ class BoardViewTest(APITestCase, SimpleTestCase):
     def test_board_url(self):
         url = reverse("board-list")
         self.assertEqual(resolve(url).func.cls, BoardView)
+
     def setUp(self):
         self.client = APIClient()
         user1 = User.objects.create_user(first_name='saba', last_name='razi',email='razi1.saba@gmail.com',\

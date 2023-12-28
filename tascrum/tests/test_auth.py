@@ -14,10 +14,6 @@ class AuthTest(APITestCase, SimpleTestCase):
         self.user = User.objects.create_user(first_name='saba', last_name='razi',email='razi.saba@gmail.com',\
                                           username= "sabarzii", password='thisissaba')
         self.assertIsInstance(self.user, User)
-    
-    # def test_login_url(self):
-    #     url = reverse("auth/users")
-    #     print(resolve(url))
 
     def test_user_email(self):
         self.assertEqual(self.user.email, 'razi.saba@gmail.com')
@@ -28,14 +24,6 @@ class AuthTest(APITestCase, SimpleTestCase):
     def test_user_error_when_no_username(self):
         self.assertRaises(ValueError, User.objects.create_user, username="",
                           email='hi@gmail.com', password='password123!@')
-    
-    # def test_user_error_when_no_password(self):
-    #     self.assertRaises(ValueError, User.objects.create_user, username="thisishi",
-    #                       email='thisshi@gmail.com', password='')
-    
-    # def test_user_error_when_no_email(self):
-    #     self.assertRaises(ValueError, User.objects.create_user, username="thisishi2",
-    #                       email='', password='eybaba')
 
     def test_unique_email(self):
         with self.assertRaises(IntegrityError):
@@ -54,9 +42,3 @@ class AuthTest(APITestCase, SimpleTestCase):
                                           username= "komijaniii", password='thisiskomij')
         self.assertEqual(User.objects.all().count(), 2)
     
-    # def delete_one_user(self):
-    #     response = self.client.delete(
-    #         reverse("create", kwargs={'username': "sabarzii"}))
-        
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-    #     self.assertEqual(Todo.objects.all().count(), 0)

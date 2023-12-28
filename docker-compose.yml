@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - 8001:8001
+    image: app:app
+    container_name: django_container
+    command: python manage.py runserver 0.0.0.0:8001

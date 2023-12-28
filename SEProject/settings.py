@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-8%(411=*i)z)6c*^l1dsh$jcr)yd-!1=8sy^j8j!cwjzj+^mzo
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['amirmohammadkomijani.pythonanywhere.com','127.0.0.1']
+ALLOWED_HOSTS = ['amirmohammadkomijani.pythonanywhere.com','127.0.0.1','localhost:8000']
 
 
 
@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    'django_filters',
     'rest_framework_simplejwt',
     "Auth",
     "tascrum",
@@ -194,6 +193,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
-# STATICFILES_DIRS = (
-#     os.path.join(BASE_DIR , 'static'),
-# )
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR , 'static'),
+)
