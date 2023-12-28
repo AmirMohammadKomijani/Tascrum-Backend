@@ -16,14 +16,14 @@ from django.shortcuts import get_object_or_404
 from collections import defaultdict
 from django.db.models import Sum, F
 from datetime import datetime, timedelta
-# import csv
+import csv
+import webcolors
+from langchain.agents.agent_types import AgentType
+from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
+from langchain_experimental.agents.agent_toolkits import create_csv_agent
+from rest_framework.views import APIView
 # import webcolors
-# from langchain.agents.agent_types import AgentType
-# from langchain.chat_models import ChatOpenAI
-# from langchain.llms import OpenAI
-# from langchain_experimental.agents.agent_toolkits import create_csv_agent
-# from rest_framework.views import APIView
-# # import webcolors
 # Create your views here.
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, DateTimeFilter
@@ -404,106 +404,106 @@ class CalenderView(ModelViewSet):
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists)
 
-### chatbot
-# class CardCSVViewSet(ModelViewSet):
-#     queryset = Card.objects.all()
-#     serializer_class = CardChatbotSerializer  
+## chatbot
+class CardCSVViewSet(ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardChatbotSerializer  
     
-#     @staticmethod
-#     def closest_colour(hex_color):
-#         requested_colour = webcolors.hex_to_rgb(hex_color)
-#         min_colours = {}
-#         for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
-#             r_c, g_c, b_c = webcolors.hex_to_rgb(key)
-#             rd = (r_c - requested_colour[0]) ** 2
-#             gd = (g_c - requested_colour[1]) ** 2
-#             bd = (b_c - requested_colour[2]) ** 2
-#             min_colours[(rd + gd + bd)] = name
-#         return min_colours[min(min_colours.keys())]
-#     @staticmethod
-#     def get_colour_name(requested_colour):
-#         try:
-#             closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
-#         except ValueError:
-#             closest_name = closest_colour(requested_colour)
-#             actual_name = None
-#         return actual_name, closest_name
+    @staticmethod
+    def closest_colour(hex_color):
+        requested_colour = webcolors.hex_to_rgb(hex_color)
+        min_colours = {}
+        for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
+            r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+            rd = (r_c - requested_colour[0]) ** 2
+            gd = (g_c - requested_colour[1]) ** 2
+            bd = (b_c - requested_colour[2]) ** 2
+            min_colours[(rd + gd + bd)] = name
+        return min_colours[min(min_colours.keys())]
+    @staticmethod
+    def get_colour_name(requested_colour):
+        try:
+            closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+        except ValueError:
+            closest_name = closest_colour(requested_colour)
+            actual_name = None
+        return actual_name, closest_name
     
-#     def export_csv(self):
-#         number = self.kwargs.get('pk')
-#         file_path=f'./media/csv/{number}.csv'
-#         lists = List.objects.filter(board=number)
-#         queryset = Card.objects.filter(list__in = lists)
-#         serializer = CardChatbotSerializer(queryset, many=True)
+    def export_csv(self):
+        number = self.kwargs.get('pk')
+        file_path=f'./media/csv/{number}.csv'
+        lists = List.objects.filter(board=number)
+        queryset = Card.objects.filter(list__in = lists)
+        serializer = CardChatbotSerializer(queryset, many=True)
 
-#         with open(file_path, 'w', newline='') as csvfile:
-#             writer = csv.writer(csvfile)
-#             keys = [
-#                         'title of card',
-#                         'list of the card',
-#                         'members of card',
-#                         'labels of card',
-#                         'start date of card',
-#                         'due date of card',
-#                         'reminder of card',
-#                         'storypoint of card',
-#                         'estimate of card',
-#                         'description of card',
-#                         'status of card'
-#                         ]
-#             writer.writerow(keys)
+        with open(file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            keys = [
+                        'title of card',
+                        'list of the card',
+                        'members of card',
+                        'labels of card',
+                        'start date of card',
+                        'due date of card',
+                        'reminder of card',
+                        'storypoint of card',
+                        'estimate of card',
+                        'description of card',
+                        'status of card'
+                        ]
+            writer.writerow(keys)
 
-#             for row in serializer.data:
-#                 members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
-#                 labels_value = [
-#                         {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
-#                         for label in row.get('labels', [])
-#                     ]                
+            for row in serializer.data:
+                members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
+                labels_value = [
+                        {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
+                        for label in row.get('labels', [])
+                    ]                
                     
-#                 writer.writerow([
-#                     row.get('title', ''),
-#                     row.get('list', {}).get('title', ''),
-#                     members_value,
-#                     labels_value,
-#                     row.get('startdate', ''),
-#                     row.get('duedate', ''),
-#                     row.get('reminder', ''),
-#                     row.get('storypoint', ''),
-#                     row.get('setestimate', ''),
-#                     row.get('description', ''),
-#                     row.get('status', ''),
-#                 ])
+                writer.writerow([
+                    row.get('title', ''),
+                    row.get('list', {}).get('title', ''),
+                    members_value,
+                    labels_value,
+                    row.get('startdate', ''),
+                    row.get('duedate', ''),
+                    row.get('reminder', ''),
+                    row.get('storypoint', ''),
+                    row.get('setestimate', ''),
+                    row.get('description', ''),
+                    row.get('status', ''),
+                ])
 
-#     def get_queryset(self):
-#         self.export_csv()
-#         member_id = Member.objects.get(user_id = self.request.user.id)
-#         return Card.objects.filter(members = member_id)
+    def get_queryset(self):
+        self.export_csv()
+        member_id = Member.objects.get(user_id = self.request.user.id)
+        return Card.objects.filter(members = member_id)
 
-# class ChatbotAPIView(ModelViewSet):
-#     queryset = Chatbot.objects.all()
-#     serializer_class = ChatbotRequestSerializer
-#     # @staticmethod
-#     def get_answer(self, number, request_message):
-#         agent = create_csv_agent(
-#         ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
-#         f"./media/csv/{number}.csv",
-#         verbose=True,
-#         agent_type=AgentType.OPENAI_FUNCTIONS,)
+class ChatbotAPIView(ModelViewSet):
+    queryset = Chatbot.objects.all()
+    serializer_class = ChatbotRequestSerializer
+    # @staticmethod
+    def get_answer(self, number, request_message):
+        agent = create_csv_agent(
+        ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
+        f"./media/csv/{number}.csv",
+        verbose=True,
+        agent_type=AgentType.OPENAI_FUNCTIONS,)
 
-#         return agent.run(request_message)
+        return agent.run(request_message)
 
-#     def post(self, request, *args, **kwargs):
-#         serializer = ChatbotRequestSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         request_message = serializer.validated_data.get('request_message')
+    def post(self, request, *args, **kwargs):
+        serializer = ChatbotRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request_message = serializer.validated_data.get('request_message')
 
-#         answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
-#         response_data = {"ai_message": answer}
+        answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
+        response_data = {"ai_message": answer}
 
-#         return Response(response_data)
+        return Response(response_data)
     
-#     def get_queryset(self):
-#         return Chatbot.objects.none()
+    def get_queryset(self):
+        return Chatbot.objects.none()
   
 ### Burndown Chart View    
 class BurndownChartViewSet(ModelViewSet):
