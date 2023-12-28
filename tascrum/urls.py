@@ -10,17 +10,17 @@ router = routers.DefaultRouter()
 
 ### account info urls
 router.register('profile',views.MemberProfileView,basename='profile')
-router.register('home',views.HomeAccountView,basename='home')
+# router.register('home',views.HomeAccountView,basename='home')
 router.register('change',views.ChangePasswordView,basename='change')
 
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')
 router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
-# router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
+router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
 
-nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
-workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
-workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
+# nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
+# workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
+# workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
 
 ### board urls
 router.register('board',views.BoardViewSet,basename='board')
@@ -86,6 +86,6 @@ router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls
 
 
