@@ -560,3 +560,8 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
     def get_labels(self, obj):
         label = obj.boardl.all()
         return LabelTimelineSerializer(label, many=True).data
+
+
+class CardDateRangeSerializer(serializers.Serializer):
+    min = serializers.DateTimeField()
+    max = serializers.DateTimeField()

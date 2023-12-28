@@ -341,3 +341,22 @@ class LabelTimelineView(ModelViewSet):
     def get_queryset(self):
         board_id = self.kwargs.get('pk')
         return Board.objects.filter(id = board_id)
+
+class TimelinePeriodView(ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer 
+
+    @action(detail=False, methods=['get'])
+    def date_range(self, request, *args, **kwargs):
+        board_id = self.kwargs.get('pk')
+        cards = Card.objects.filter(list__board__id=board_id)
+        min_startdate = cards.aggregate(models.Min('startdate'))['startdate__min']
+        max_duedate = cards.aggregate(models.Max('duedate'))['duedate__max']
+
+        response_data = {
+            "min": min_startdate,
+            "max": max_duedate,
+        }
+
+        serializer = CardDateRangeSerializer(response_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)

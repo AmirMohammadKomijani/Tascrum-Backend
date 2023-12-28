@@ -55,6 +55,7 @@ router.register('dnd',views.Internal_DndView,basename='dnd')
 router.register('list-tl',views.ListTimelineView,basename='list-tl')
 router.register('member-tl',views.MemberTimelineView,basename='member-tl')
 router.register('label-tl',views.LabelTimelineView,basename='label-tl')
+router.register('period-tl',views.TimelinePeriodView,basename='period-tl')
 
 
 
