@@ -373,13 +373,22 @@ class TimelineStartPeriodView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        lists = List.objects.filter(board__in=board_id)
-        cards = Card.objects.filter(list__in=lists).order_by('-startdate')
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        cards = Card.objects.filter(list__in=lists, startdate__isnull=False) 
+        return [cards.order_by('startdate').first()]
 
-        print(cards.first().startdate)
-        print(cards.first())
-        return cards.first()
+class TimelineDuePeriodView(ModelViewSet):
+    serializer_class = TimelineDueSerializer 
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        cards = Card.objects.filter(list__in=lists, duedate__isnull=False) 
+        return [cards.order_by('duedate').last()]
 
 
 ### Meeting View

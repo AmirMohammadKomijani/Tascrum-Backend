@@ -613,7 +613,7 @@ class LabelsTimelineSerializer(serializers.ModelSerializer):
 class TimelineStartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['startdate','duedate']
+        fields = ['startdate']
 
 class TimelineDueSerializer(serializers.ModelSerializer):
     class Meta:
