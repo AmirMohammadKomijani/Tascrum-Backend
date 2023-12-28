@@ -1,7 +1,0 @@
-{
-    "disk":
-        {
-            "name":"sqlite",
-            "mountTo":"."
-        }
-}
