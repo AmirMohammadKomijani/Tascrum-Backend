@@ -34,13 +34,18 @@ router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
 # router.register('meeting',views.MeetingView,basename='meeting')
-router.register('board-filter',views.BoardfilterView,basename='board-filter')
 
 nestedRouter.register(r'boards', views.BoardViewSet, basename='boards')
 meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 meeting_router.register(r'meeting', views.CreateMeetingView, basename='meetings')
 # meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 # meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+
+filter_board_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+filter_board_router.register(r'filter-board', views.BoardfilterView, basename='filter-board')
+
+search_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+search_router.register(r'card-search', views.CardSearchViewSet, basename='card-search')
 
 
 ### invite member to board
@@ -90,7 +95,6 @@ router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
 
-
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls + timeline1_router.urls + timeline2_router.urls
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls + search_router.urls + filter_board_router.urls + timeline1_router.urls + timeline2_router.urls
 
 
