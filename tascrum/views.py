@@ -878,19 +878,26 @@ class BurndownChartEstimateViewSet(ModelViewSet):
 
 
 class BoardFilter(FilterSet):
-    title = django_filters.CharFilter(lookup_expr='icontains')
-    has_star = BooleanFilter()
-    lastseen = DateTimeFilter()
-
+    members = django_filters.ModelMultipleChoiceFilter(
+        queryset=Member.objects.all(),
+        field_name='clist__members',
+        to_field_name='id'
+    )
+    duedate = DateTimeFilter(field_name='duedate')
+    labels = django_filters.ModelMultipleChoiceFilter(
+        queryset=Lable.objects.all(),
+        field_name='clabel__labels',
+        to_field_name='id'
+    )
     class Meta:
-        model = Board
-        fields = ['title', 'has_star', 'lastseen']
+        model = Card
+        fields = ['members', 'duedate', 'labels']
 
 class BoardfilterView(ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = Board.objects.all()
-    serializer_class = BoardSerializer
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = BoardFilter
-    filterset_fields = ['title', 'has_star', 'lastseen']
-    ordering_fields = ['title', 'has_star', 'lastseen']
+    filterset_fields = ['members', 'duedate', 'labels']
+    ordering_fields = ['members', 'duedate', 'labels']
