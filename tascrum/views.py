@@ -880,24 +880,52 @@ class BurndownChartEstimateViewSet(ModelViewSet):
 class BoardFilter(FilterSet):
     members = django_filters.ModelMultipleChoiceFilter(
         queryset=Member.objects.all(),
-        field_name='clist__members',
-        to_field_name='id'
+        field_name='members',
+        to_field_name='id',
+        conjoined=True
     )
-    duedate = DateTimeFilter(field_name='duedate')
+    duedate_before = django_filters.DateFilter(
+        field_name='duedate',
+        lookup_expr='lte',  # 'lte' stands for less than or equal to (before)
+    )
+
+    duedate_after = django_filters.DateFilter(
+        field_name='duedate',
+        lookup_expr='gte',  # 'gte' stands for greater than or equal to (after)
+    )
+
+    duedate_next_day = django_filters.DateFilter(
+        field_name='duedate',
+        lookup_expr='exact',  # 'exact' stands for exact date (next day)
+    )
     labels = django_filters.ModelMultipleChoiceFilter(
         queryset=Lable.objects.all(),
-        field_name='clabel__labels',
-        to_field_name='id'
+        field_name='labels',
+        to_field_name='id',
+        conjoined=True
     )
     class Meta:
         model = Card
-        fields = ['members', 'duedate', 'labels']
-
+        fields =fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
+    
 class BoardfilterView(ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Card.objects.all()
     serializer_class = CardSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = BoardFilter
-    filterset_fields = ['members', 'duedate', 'labels']
-    ordering_fields = ['members', 'duedate', 'labels']
+    filterset_fields = ['members',  'labels']
+    ordering_fields = ['members',  'labels']
+
+# class CardSearchViewSet(ModelViewSet):
+#     queryset = Card.objects.all()
+#     serializer_class = CardSerializer
+#     filter_backends = [SearchFilter]
+#     search_fields = ['title']
+
+#     def get_queryset(self):
+#         board_id = self.request.query_params.get('board')
+#         member = Member.objects.get(user_id = self.request.user.id)
+#         boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+#         lists = List.objects.filter(board__in = boards)
+#         return Card.objects.filter(list__in=lists)
