@@ -93,28 +93,28 @@ CORS_ALLOW_ALL_ORIGINS = True
 # }
 
 ## local
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SEProject',
-        'USER': 'postgres',
-        'PASSWORD': 'AmirPostgreSQL',
-        'HOST': 'localhost',
-        'PORT': '5432'
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'SEProject',
+#         'USER': 'postgres',
+#         'PASSWORD': 'AmirPostgreSQL',
+#         'HOST': 'localhost',
+#         'PORT': '5432'
+#     }
+# }
 
 ## server
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': '<database_name>',
-#        'USER': '<database_username>',
-#        'PASSWORD': '<password>',
-#        'HOST': '<database_hostname_or_ip>',
-#        'PORT': '<database_port>',
-#    }
-# }
+DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.postgresql',
+       'NAME': 'tascrum-db',
+       'USER': 'root',
+       'PASSWORD': 'tGtftVzHTasXvW4ZWUnRJjRE',
+       'HOST': 'tascrum-db',
+       'PORT': '5432',
+   }
+}
 
 
 # DATABASES = {
