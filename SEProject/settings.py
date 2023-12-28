@@ -104,18 +104,27 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     }
 # }
 
-## server
-DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.postgresql',
-       'NAME': 'tascrum-db',
-       'USER': 'root',
-       'PASSWORD': 'tGtftVzHTasXvW4ZWUnRJjRE',
-       'HOST': 'tascrum-db',
-       'PORT': '5432',
-   }
-}
+import os
+import dj_database_url
+from dotenv import load_dotenv
 
+load_dotenv()
+## server
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'tascrum-db',
+#        'USER': 'root',
+#        'PASSWORD': 'tGtftVzHTasXvW4ZWUnRJjRE',
+#        'HOST': 'tascrum-db',
+#        'PORT': '5432',
+#    }
+# }
+
+
+DATABASES = {
+    'default' : dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+}
 
 # DATABASES = {
 #     'default': {
