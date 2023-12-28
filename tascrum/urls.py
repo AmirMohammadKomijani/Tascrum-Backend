@@ -95,6 +95,6 @@ router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls + search_router.urls + filter_board_router.urls + timeline1_router.urls + timeline2_router.urls
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + search_router.urls + filter_board_router.urls + timeline1_router.urls + timeline2_router.urls
 
 
