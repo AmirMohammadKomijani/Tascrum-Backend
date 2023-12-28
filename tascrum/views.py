@@ -906,26 +906,31 @@ class BoardFilter(FilterSet):
     )
     class Meta:
         model = Card
-        fields =fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
+        fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
     
 class BoardfilterView(ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = Card.objects.all()
+    # queryset = Card.objects.all()
     serializer_class = CardSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = BoardFilter
-    filterset_fields = ['members',  'labels']
-    ordering_fields = ['members',  'labels']
+    filterset_fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
+    ordering_fields =['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
+    
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        return Card.objects.filter(list__in=lists) 
 
-# class CardSearchViewSet(ModelViewSet):
-#     queryset = Card.objects.all()
-#     serializer_class = CardSerializer
-#     filter_backends = [SearchFilter]
-#     search_fields = ['title']
+class CardSearchViewSet(ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['title']
 
-#     def get_queryset(self):
-#         board_id = self.request.query_params.get('board')
-#         member = Member.objects.get(user_id = self.request.user.id)
-#         boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-#         lists = List.objects.filter(board__in = boards)
-#         return Card.objects.filter(list__in=lists)
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        return Card.objects.filter(list__in=lists) 
