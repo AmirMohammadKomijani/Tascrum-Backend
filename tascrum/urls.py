@@ -69,6 +69,10 @@ router.register('dnd',views.Internal_DndView,basename='dnd')
 router.register('list-tl',views.ListTimelineView,basename='list-tl')
 router.register('member-tl',views.MemberTimelineView,basename='member-tl')
 router.register('label-tl',views.LabelTimelineView,basename='label-tl')
+timeline1_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+timeline1_router.register(r'start-tl', views.TimelineStartPeriodView, basename='start-tl')
+timeline2_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+timeline2_router.register(r'due-tl', views.TimelineDuePeriodView, basename='due-tl')
 
 ### burndown
 router.register('burndown-chart', views.BurndownChartViewSet, basename='burndown-chart')
@@ -86,6 +90,7 @@ router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
 router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls
+
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls + timeline1_router.urls + timeline2_router.urls
 
 

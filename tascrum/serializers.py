@@ -587,6 +587,38 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
         fields = ['id','members']
 
 
+#label
+class LabelTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'cards']
+
+    def get_cards(self, obj):
+        label_id = obj.id  
+        card_labels = CardLabel.objects.filter(label_id=label_id)
+        card_ids = [card_label.card.id for card_label in card_labels]
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+class LabelsTimelineSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self, obj):
+        label = obj.boardl.all()
+        return LabelTimelineSerializer(label, many=True).data
+
+class TimelineStartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['startdate']
+
+class TimelineDueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['duedate']
 
 
 ## burndown
@@ -624,29 +656,6 @@ class CreateBurndownChartSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-#label
-class LabelTimelineSerializer(serializers.ModelSerializer):
-    cards = serializers.SerializerMethodField()
-    class Meta:
-        model = Lable
-        fields = ['id', 'title', 'color', 'cards']
-
-    def get_cards(self, obj):
-        label_id = obj.id  
-        card_labels = CardLabel.objects.filter(label_id=label_id)
-        card_ids = [card_label.card.id for card_label in card_labels]
-        cards = Card.objects.filter(id__in=card_ids)
-        return CardsTimelineSerializer(cards, many=True).data
-class LabelsTimelineSerializer(serializers.ModelSerializer):
-    labels = serializers.SerializerMethodField()
-    class Meta:
-        model = Board
-        fields = ['id', 'labels']
-
-    def get_labels(self, obj):
-        label = obj.boardl.all()
-        return LabelTimelineSerializer(label, many=True).data
 
 
 

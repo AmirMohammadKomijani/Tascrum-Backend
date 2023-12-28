@@ -368,9 +368,30 @@ class LabelTimelineView(ModelViewSet):
         board_id = self.kwargs.get('pk')
         return Board.objects.filter(id = board_id)
 
+class TimelineStartPeriodView(ModelViewSet):
+    serializer_class = TimelineStartSerializer 
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        cards = Card.objects.filter(list__in=lists, startdate__isnull=False) 
+        return [cards.order_by('startdate').first()]
+
+class TimelineDuePeriodView(ModelViewSet):
+    serializer_class = TimelineDueSerializer 
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        member = Member.objects.get(user_id = self.request.user.id)
+        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
+        lists = List.objects.filter(board__in = boards)
+        cards = Card.objects.filter(list__in=lists, duedate__isnull=False) 
+        return [cards.order_by('duedate').last()]
+
 
 ### Meeting View
-
 class CreateMeetingView(ModelViewSet):
     serializer_class = CreateMeetingSerializer
     permission_classes = [IsAuthenticated]

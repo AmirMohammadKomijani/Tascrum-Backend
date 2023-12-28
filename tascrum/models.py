@@ -114,6 +114,9 @@ class Card(models.Model):
         # unique_together = ('list', 'order',)
     
     def save(self, *args, **kwargs):
+        if self.startdate and self.duedate and self.startdate <= self.duedate:
+            raise ValidationError("Due date must be after start date.")
+            
         if not self.order:
             max_order_in_list = Card.objects.filter(list=self.list).aggregate(models.Max('order'))['order__max']
             if max_order_in_list is not None:
