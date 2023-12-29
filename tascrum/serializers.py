@@ -130,6 +130,17 @@ class BoardSerializer(serializers.ModelSerializer):
     def get_list(self, obj):
         list = obj.lboard.all()
         return BoardListSerializer(list, many=True).data
+    
+class BoardProfileSerializer(serializers.ModelSerializer):
+    workspace = WorkspaceSerializer(read_only=True)
+    list = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id','title','backgroundimage','workspace','list','lastseen','has_star', 'invitation_link']
+
+    def get_list(self, obj):
+        list = obj.lboard.all()
+        return BoardListSerializer(list, many=True).data
 
 # class BoardInviteLink(serializers.ModelSerializer):
 #     class Meta:
@@ -205,6 +216,17 @@ class ListSerializer(serializers.ModelSerializer):
     def get_card(self, obj):
         cards = obj.clist.all()
         return ListCardSerializer(cards, many=True).data
+    
+class ListProfileSerializer(serializers.ModelSerializer):
+    board = BoardProfileSerializer(read_only=True)
+    card = serializers.SerializerMethodField()
+    class Meta:
+        model = List
+        fields = ['id','title','board','card']
+    
+    def get_card(self, obj):
+        cards = obj.clist.all()
+        return ListCardSerializer(cards, many=True).data
 
 class CreateListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -245,6 +267,19 @@ class CardLableSerialzier(serializers.ModelSerializer):
 class CardSerializer(serializers.ModelSerializer):
     members = CardMemberSerializer(many=True)
     labels = CardLableSerialzier(many=True)
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = Card
+        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description','status','comment']
+
+    def get_role(self, obj):
+        roles = obj.crole.all()
+        return CardRoleSerializer(roles, many=True).data
+    
+class CardProfileSerializer(serializers.ModelSerializer):
+    members = CardMemberSerializer(many=True)
+    labels = CardLableSerialzier(many=True)
+    list = ListProfileSerializer(read_only=True)
     role = serializers.SerializerMethodField()
     class Meta:
         model = Card
