@@ -1,6 +1,8 @@
 from django.db import models
 from Auth.models import User
 import uuid
+from django.core.exceptions import ValidationError
+
 
 
 class Member(models.Model):

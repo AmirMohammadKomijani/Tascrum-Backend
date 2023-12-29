@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='board',
-            name='backgroundImage',
+            name='backgroundimage',
             field=models.ImageField(null=True, upload_to='images/'),
         ),
         migrations.AlterField(
