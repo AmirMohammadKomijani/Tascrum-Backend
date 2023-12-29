@@ -541,11 +541,15 @@ class MemberTimelineSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id','user','profimage','cards']
         
-    def get_cards(self, obj):
-        member_id = obj.id 
-        card_members = MemberCardRole.objects.filter(member_id=member_id)
-        card_ids = [card_member.card.id for card_member in card_members]
-        cards = Card.objects.filter(id__in=card_ids)
+    def get_cards(self, obj): 
+        member_id = obj.id
+        view = self.context.get('view')  
+        board_id = view.kwargs.get('pk')
+        # board_id = self.kwargs['pk'] 
+        lists = List.objects.filter(board=board_id) 
+        card_members = MemberCardRole.objects.filter(member_id=member_id) 
+        card_ids = [card_member.card.id for card_member in card_members] 
+        cards = Card.objects.filter(id__in=card_ids, list__in=lists) 
         return CardsTimelineSerializer(cards, many=True).data
 
 class MembersTimelineSerializer(serializers.ModelSerializer):
