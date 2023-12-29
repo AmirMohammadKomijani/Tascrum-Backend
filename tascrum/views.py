@@ -257,6 +257,15 @@ class BoardCardsViewSet(ModelViewSet):
             queryset = queryset.filter(labels__id__in=label_ids).distinct()
 
         return queryset
+    
+class UserBoardLabelsViewSet(ModelViewSet):
+    serializer_class = LabelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        boards = Board.objects.filter(members__user=user)
+        return Lable.objects.filter(board__in=boards).distinct()
 
 class CreateCardView(ModelViewSet):
     # allowed_methods = ('POST','HEAD','OPTIONS')
