@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-8%(411=*i)z)6c*^l1dsh$jcr)yd-!1=8sy^j8j!cwjzj+^mzo
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['amirmohammadkomijani.pythonanywhere.com','127.0.0.1','localhost:8000']
+ALLOWED_HOSTS = ['wonderful-sammet-5-1sbsqxi.iran.liara.run','127.0.0.1','localhost:8000']
 
 
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "tascrum",
     "djoser",
     "corsheaders",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -84,13 +85,46 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
+## local
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'SEProject',
+#         'USER': 'postgres',
+#         'PASSWORD': 'AmirPostgreSQL',
+#         'HOST': 'localhost',
+#         'PORT': '5432'
+#     }
+# }
+
+import os
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
+## server
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'tascrum-db',
+#        'USER': 'root',
+#        'PASSWORD': 'tGtftVzHTasXvW4ZWUnRJjRE',
+#        'HOST': 'tascrum-db',
+#        'PORT': '5432',
+#    }
+# }
+
+
+DATABASES = {
+    'default' : dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+}
 
 # DATABASES = {
 #     'default': {

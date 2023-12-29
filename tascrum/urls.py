@@ -10,17 +10,17 @@ router = routers.DefaultRouter()
 
 ### account info urls
 router.register('profile',views.MemberProfileView,basename='profile')
-router.register('home',views.HomeAccountView,basename='home')
+# router.register('home',views.HomeAccountView,basename='home')
 router.register('change',views.ChangePasswordView,basename='change')
 
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')
 router.register('crworkspace',views.CreateWorkspaceView,basename='crworkspace')
-# router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
+router.register('workspace-members',views.WorkspaceMembersView,basename='workspace-members')
 
-nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
-workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
-workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
+# nestedRouter.register(r'workspaces', views.WorkspaceView, basename='workspaces')
+# workspace_router = nested.NestedSimpleRouter(nestedRouter, r'workspaces', lookup='workspace')
+# workspace_router.register(r'members', views.WorkspaceMembersView, basename='members')
 
 ### board urls
 router.register('board',views.BoardViewSet,basename='board')
@@ -41,6 +41,12 @@ meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='boar
 meeting_router.register(r'meeting', views.CreateMeetingView, basename='meetings')
 # meeting_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
 # meeting_router.register(r'meetings', views.MeetingView, basename='meetings')
+
+filter_board_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+filter_board_router.register(r'filter-board', views.BoardfilterView, basename='filter-board')
+
+search_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+search_router.register(r'card-search', views.CardSearchViewSet, basename='card-search')
 
 
 ### invite member to board
@@ -69,6 +75,10 @@ router.register('dnd',views.Internal_DndView,basename='dnd')
 router.register('list-tl',views.ListTimelineView,basename='list-tl')
 router.register('member-tl',views.MemberTimelineView,basename='member-tl')
 router.register('label-tl',views.LabelTimelineView,basename='label-tl')
+timeline1_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+timeline1_router.register(r'start-tl', views.TimelineStartPeriodView, basename='start-tl')
+timeline2_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='board')
+timeline2_router.register(r'due-tl', views.TimelineDuePeriodView, basename='due-tl')
 
 ### burndown
 router.register('burndown-chart', views.BurndownChartViewSet, basename='burndown-chart')
@@ -82,9 +92,10 @@ calender_router = nested.NestedSimpleRouter(nestedRouter, r'boards', lookup='boa
 calender_router.register(r'calender', views.CalenderView, basename='calender')
 
 ###Chatbot
-# router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
-# router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
+router.register('csvbuild',views.CardCSVViewSet,basename='csvbuild')
+router.register('chatbot',views.ChatbotAPIView,basename='chatbot')
 
-urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + workspace_router.urls
+
+urlpatterns = router.urls + nestedRouter.urls + calender_router.urls + meeting_router.urls + search_router.urls + filter_board_router.urls + timeline1_router.urls + timeline2_router.urls
 
 

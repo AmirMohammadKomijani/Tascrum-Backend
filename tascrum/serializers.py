@@ -82,11 +82,11 @@ class WorkspaceMembersSerializer(serializers.ModelSerializer):
 class WorkspaceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','has_star']
+        fields = ['id','title','backgroundimage','has_star']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['backgroundImage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundImage']
+        representation['backgroundimage'] = "https://amirmohammadkomijani.pythonanywhere.com" + representation['backgroundimage']
         return representation
 
 
@@ -99,7 +99,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     boards = serializers.SerializerMethodField()
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','boards','backgroundImage']
+        fields = ['id','name','type','description','boards','backgroundimage']
    
     def get_boards(self, obj):
         roles = obj.wboard.all()
@@ -109,7 +109,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
-        fields = ['id','name','type','description','backgroundImage']
+        fields = ['id','name','type','description','backgroundimage']
 
     def create(self, validated_data):
         member = Member.objects.get(user_id = self.context['user_id'])
@@ -121,7 +121,7 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.type = validated_data.get('type', instance.type)
         instance.description = validated_data.get('description', instance.description)
-        instance.backgroundImage = validated_data.get('backgroundImage', instance.backgroundImage)
+        instance.backgroundImage = validated_data.get('backgroundimage', instance.backgroundImage)
         instance.save()
         return instance
 
@@ -157,7 +157,7 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','workspace','list','lastseen','has_star']
+        fields = ['id','title','backgroundimage','workspace','list','lastseen','has_star']
 
     def get_list(self, obj):
         list = obj.lboard.all()
@@ -172,7 +172,7 @@ class BoardInviteLink(serializers.ModelSerializer):
 class CreateBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','workspace','backgroundImage','invitation_link']
+        fields = ['id','title','workspace','backgroundimage','invitation_link']
 
 
     def create(self, validated_data):
@@ -183,7 +183,7 @@ class CreateBoardSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.backgroundImage = validated_data.get('backgroundImage' , instance.backgroundImage)
+        instance.backgroundimage = validated_data.get('backgroundimage' , instance.backgroundimage)
         instance.save()
         return instance
 
@@ -191,16 +191,16 @@ class CreateBoardSerializer(serializers.ModelSerializer):
 class BoardBackgroundImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','backgroundImage']
+        fields = ['id','backgroundimage']
 
 class BoardRecentlyViewed(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id', 'title', 'backgroundImage','has_star']
+        fields = ['id', 'title', 'backgroundimage','has_star']
 class BoardStarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ['id','title','backgroundImage','has_star']
+        fields = ['id','title','backgroundimage','has_star']
 
     # def update(self, instance, validated_data):
     #     instance.has_star = validated_data.get('has_star', instance.has_star)
@@ -248,7 +248,7 @@ class CreateListSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.backgroundImage = validated_data.get('backgroundImage' , instance.backgroundImage)
+        instance.backgroundimage = validated_data.get('backgroundimage' , instance.backgroundimage)
         instance.save()
         return instance
 
@@ -293,13 +293,9 @@ class CreateCardSerializer(serializers.ModelSerializer):
         fields = ['id','title','list','startdate','duedate', 'reminder', 'storypoint', 'setestimate','description','status', 'comment']
 
     def create(self, validated_data):
-        owner = Member.objects.get(user_id = self.context['user_id'])
-        # board_role = MemberBoardRole.objects.filter(member = owner).first()
-
-        # if board_role.role == "owner":
         validated_data['duedate'] = timezone.now()    
         card = Card.objects.create(**validated_data)
-        # MemberCardRole.objects.create(card = card,member=owner)
+        # MemberCardRole.objects.create(card)
         return card
     
     def update(self, instance, validated_data):
@@ -591,6 +587,38 @@ class MembersTimelineSerializer(serializers.ModelSerializer):
         fields = ['id','members']
 
 
+#label
+class LabelTimelineSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+    class Meta:
+        model = Lable
+        fields = ['id', 'title', 'color', 'cards']
+
+    def get_cards(self, obj):
+        label_id = obj.id  
+        card_labels = CardLabel.objects.filter(label_id=label_id)
+        card_ids = [card_label.card.id for card_label in card_labels]
+        cards = Card.objects.filter(id__in=card_ids)
+        return CardsTimelineSerializer(cards, many=True).data
+class LabelsTimelineSerializer(serializers.ModelSerializer):
+    labels = serializers.SerializerMethodField()
+    class Meta:
+        model = Board
+        fields = ['id', 'labels']
+
+    def get_labels(self, obj):
+        label = obj.boardl.all()
+        return LabelTimelineSerializer(label, many=True).data
+
+class TimelineStartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['startdate']
+
+class TimelineDueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['duedate']
 
 
 ## burndown
@@ -629,29 +657,6 @@ class CreateBurndownChartSerializer(serializers.ModelSerializer):
         return instance
 
 
-#label
-class LabelTimelineSerializer(serializers.ModelSerializer):
-    cards = serializers.SerializerMethodField()
-    class Meta:
-        model = Lable
-        fields = ['id', 'title', 'color', 'cards']
-
-    def get_cards(self, obj):
-        label_id = obj.id  
-        card_labels = CardLabel.objects.filter(label_id=label_id)
-        card_ids = [card_label.card.id for card_label in card_labels]
-        cards = Card.objects.filter(id__in=card_ids)
-        return CardsTimelineSerializer(cards, many=True).data
-class LabelsTimelineSerializer(serializers.ModelSerializer):
-    labels = serializers.SerializerMethodField()
-    class Meta:
-        model = Board
-        fields = ['id', 'labels']
-
-    def get_labels(self, obj):
-        label = obj.boardl.all()
-        return LabelTimelineSerializer(label, many=True).data
-
 
 
 ## Meeting
@@ -665,12 +670,13 @@ class CreateMeetingSerializer(serializers.ModelSerializer):
         new_member = validated_data['member']
         board = Board.objects.get(id = self.context['board_id'])
         time = validated_data['time']
+        title = validated_data['title']
 
         if MemberBoardRole.objects.filter(member=member,board=board).exists() and\
              MemberBoardRole.objects.filter(member=new_member, board=board).exists():
             if not Meeting.objects.filter(member=member,time=time).exists():
                 if not Meeting.objects.filter(member=member,board=board,time=time).exists():
-                    Meeting.objects.create(member=member,board=board,time=time)
+                    Meeting.objects.create(member=member,board=board,time=time,title = title)
             # else:
             #     if not Meeting.objects.filter(member=member,board=board,time=time).exists():
             #         Meeting.objects.create(member=member,board=board,time=time)
@@ -679,7 +685,7 @@ class CreateMeetingSerializer(serializers.ModelSerializer):
                                 
             if not Meeting.objects.filter(member=new_member,time=time).exists():
                 if not Meeting.objects.filter(member=new_member,board=board,time=time).exists():
-                        return Meeting.objects.create(member=new_member,board=board,time=time)
+                        return Meeting.objects.create(member=new_member,board=board,time=time,title = title)
                 else:
                         raise serializers.ValidationError("this member is already added to this meeting.")
             else:
