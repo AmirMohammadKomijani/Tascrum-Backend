@@ -229,6 +229,43 @@ class CardView(ModelViewSet):
         board_id = self.request.query_params.get('board')
         list_id = List.objects.filter(board__in = board_id)
         return Card.objects.filter(list__in=list_id)
+    
+class CardViewMember(ModelViewSet):
+    serializer_class = CardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Card.objects.filter(members__user=user)
+        label_ids = self.request.query_params.getlist('label_ids')
+        if label_ids:
+            queryset = queryset.filter(labels__id__in=label_ids).distinct()
+
+        return queryset
+    
+class BoardCardsViewSet(ModelViewSet):
+    serializer_class = CardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        boards = Board.objects.filter(members__user=user)
+        list_id = List.objects.filter(board__in = boards)
+        queryset = Card.objects.filter(list__in=list_id)
+        label_ids = self.request.query_params.getlist('label_ids')
+        if label_ids:
+            queryset = queryset.filter(labels__id__in=label_ids).distinct()
+
+        return queryset
+    
+class UserBoardLabelsViewSet(ModelViewSet):
+    serializer_class = LabelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        boards = Board.objects.filter(members__user=user)
+        return Lable.objects.filter(board__in=boards).distinct()
 
 class CreateCardView(ModelViewSet):
     # allowed_methods = ('POST','HEAD','OPTIONS')
