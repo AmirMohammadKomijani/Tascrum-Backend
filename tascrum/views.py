@@ -90,6 +90,26 @@ class BoardViewSet(ModelViewSet):
         
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='join/(?P<invitation_link>[^/.]+)', permission_classes=[IsAuthenticated])
+    def join(self, request, invitation_link=None):
+        board = get_object_or_404(Board, invitation_link=invitation_link)
+        member, created = Member.objects.get_or_create(user_id=request.user.id)
+
+        if not board.members.filter(id=member.id).exists():
+            board.members.add(member)
+            return Response({'status': 'Member added to the board', 'board_id': board.id}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'Member already in board', 'board_id': board.id}, status=status.HTTP_200_OK)
+        
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def reset(self, request, pk=None):
+        board = self.get_object()
+        board.invitation_link = str(uuid.uuid4())
+        board.save()
+
+        return Response({'status': 'Invitation link reset', 'new_invitation_link': board.invitation_link}, status=status.HTTP_200_OK)
+    
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
@@ -107,9 +127,9 @@ class CreateBoardView(ModelViewSet):
     
     def perform_create(self, serializer):
             board = serializer.save()
-            invitation_link = generate_invitation_link()
-            board.invitation_link = invitation_link
-            board.save()
+            # invitation_link = generate_invitation_link()
+            # board.invitation_link = invitation_link
+            # board.save()
             Lable.objects.create(board=board, color='#e67c73', title='')
             Lable.objects.create(board=board, color='#f7cb4d', title='')
             Lable.objects.create(board=board, color='#41b375', title='')
@@ -146,14 +166,14 @@ class BoardStarUpdate(ModelViewSet):
         serializer.save()
         return Response(serializer.data)
     
-class BoardInvitationLinkView(ModelViewSet):
-    queryset = Board.objects.all()
-    serializer_class = BoardInviteLink
+# class BoardInvitationLinkView(ModelViewSet):
+#     queryset = Board.objects.all()
+#     serializer_class = BoardInviteLink
 
-    def get_invitation_link(self, request):
-        board_id = request.GET.get('board_id')
-        invitation_link = Board.objects.get(id=board_id).invitation_link
-        return HttpResponse(invitation_link)
+#     def get_invitation_link(self, request):
+#         board_id = request.GET.get('board_id')
+#         invitation_link = Board.objects.get(id=board_id).invitation_link
+#         return HttpResponse(invitation_link)
     
 class BoardRecentlyViewedView(ModelViewSet):
     serializer_class = BoardRecentlyViewed

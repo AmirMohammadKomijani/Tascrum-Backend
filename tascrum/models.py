@@ -1,5 +1,6 @@
 from django.db import models
 from Auth.models import User
+import uuid
 
 
 class Member(models.Model):
@@ -50,9 +51,14 @@ class Board(models.Model):
     workspace = models.ForeignKey(Workspace,on_delete=models.CASCADE,related_name='wboard')
     members = models.ManyToManyField(Member, through='MemberBoardRole',related_name='bmembers')
     has_star = models.BooleanField(default=False)
-    invitation_link = models.CharField(max_length=255, null=True, blank=True)
+    invitation_link = models.CharField(max_length=255, default=uuid.uuid4, unique=True)
     backgroundimage = models.ImageField(upload_to='images/',default='default_profile.png')
     lastseen = models.DateTimeField(auto_now=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.invitation_link:
+            self.invitation_link = str(uuid.uuid4())
+        super(Board, self).save(*args, **kwargs)
 
 class MemberBoardRole(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE,related_name='bmember')
