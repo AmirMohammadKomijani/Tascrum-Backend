@@ -4,39 +4,7 @@ from Auth.serializers import UserProfileSerializer, UserTimelineSerializer
 from Auth.models import User
 from django.utils import timezone
 import datetime
-### Profile feature
-class MemberProfileSerializer(serializers.ModelSerializer):
-    user = UserProfileSerializer()
-    class Meta:
-        model = Member
-        fields = ['id', 'occupations', 'bio', 'profimage', 'birthdate', 'user']
 
-    def update(self, instance, validated_data):
-        instance.occupations = validated_data.get('occupations',instance.occupations)
-        instance.bio = validated_data.get('bio',instance.bio)
-        instance.profimage = validated_data.get('profimage',instance.profimage)
-        instance.birthdate = validated_data.get('birthdate',instance.birthdate)
-        instance.save()
-        
-        user_data = validated_data.pop('user', None)
-        user = instance.user
-        user_serializer = UserProfileSerializer(user, data=user_data)
-        user_serializer.is_valid(raise_exception=True)
-        user_serializer.save()
-        return instance
-
-class ChangePasswordSerializer(serializers.ModelSerializer):
-    Newpassword = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ['Newpassword']
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        user.set_password(validated_data['Newpassword'])
-        user.save()
-        return user
 
 ### Home-Account inforamtion feature
 class MemberWorkspaceSerializer(serializers.ModelSerializer):
@@ -760,3 +728,51 @@ class ChatbotRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chatbot
         fields = ['request_message']
+
+
+### Profile feature
+class MemberProfileSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+    class Meta:
+        model = Member
+        fields = ['id', 'occupations', 'bio', 'profimage', 'birthdate', 'user']
+
+    def update(self, instance, validated_data):
+        instance.occupations = validated_data.get('occupations',instance.occupations)
+        instance.bio = validated_data.get('bio',instance.bio)
+        instance.profimage = validated_data.get('profimage',instance.profimage)
+        instance.birthdate = validated_data.get('birthdate',instance.birthdate)
+        instance.save()
+        
+        user_data = validated_data.pop('user', None)
+        user = instance.user
+        user_serializer = UserProfileSerializer(user, data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
+        return instance
+
+##card filter profile 
+class CardFilterSerializer(serializers.ModelSerializer): 
+    members = CardMemberSerializer(many=True) 
+    labels = CardLableSerialzier(many=True) 
+    role = serializers.SerializerMethodField() 
+    class Meta: 
+        model = Card 
+        fields = ['id','order','title','list','members','role','labels','startdate','duedate','reminder', 'storypoint', 'setestimate','description'] 
+ 
+    def get_role(self, obj): 
+        roles = obj.crole.all() 
+        return CardRoleSerializer(roles, many=True).data
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    Newpassword = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['Newpassword']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        user.set_password(validated_data['Newpassword'])
+        user.save()
+        return user

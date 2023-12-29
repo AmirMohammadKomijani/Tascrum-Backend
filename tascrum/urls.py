@@ -10,8 +10,9 @@ router = routers.DefaultRouter()
 
 ### account info urls
 router.register('profile',views.MemberProfileView,basename='profile')
-# router.register('home',views.HomeAccountView,basename='home')
+router.register('home',views.HomeAccountView,basename='home')
 router.register('change',views.ChangePasswordView,basename='change')
+router.register('card-filter',views.CardFilterView,basename='card-filter')
 
 ### workspace urls
 router.register('workspace',views.WorkspaceView,basename='workspace')

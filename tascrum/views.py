@@ -991,3 +991,15 @@ class CardSearchViewSet(ModelViewSet):
         boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
         lists = List.objects.filter(board__in = boards)
         return Card.objects.filter(list__in=lists) 
+
+
+## card filter  
+class CardFilterView(ModelViewSet): 
+    serializer_class = CardFilterSerializer 
+    permission_classes = [IsAuthenticated] 
+ 
+    def get_queryset(self): 
+        member = Member.objects.get(user_id = self.request.user.id) 
+        boards = Board.objects.filter(members = member) 
+        lists = List.objects.filter(board__in = boards) 
+        return Card.objects.filter(list__in=lists)
