@@ -26,8 +26,8 @@ SECRET_KEY = "django-insecure-8%(411=*i)z)6c*^l1dsh$jcr)yd-!1=8sy^j8j!cwjzj+^mzo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['wonderful-sammet-5-1sbsqxi.iran.liara.run','127.0.0.1','localhost:8000']
+ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['127.0.0.1','localhost:8000']
 
 
 
@@ -93,52 +93,30 @@ CORS_ALLOW_ALL_ORIGINS = True
 # }
 
 ## local
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'SEProject',
-#         'USER': 'postgres',
-#         'PASSWORD': 'AmirPostgreSQL',
-#         'HOST': 'localhost',
-#         'PORT': '5432'
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'SEProject',
+        'USER': 'postgres',
+        'PASSWORD': 'AmirPostgreSQL',
+        'HOST': 'localhost',
+        'PORT': '5432'
+    }
+}
 
+
+## server
 import os
 import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
-## server
+
 # DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'tascrum-db',
-#        'USER': 'root',
-#        'PASSWORD': 'tGtftVzHTasXvW4ZWUnRJjRE',
-#        'HOST': 'tascrum-db',
-#        'PORT': '5432',
-#    }
+#     'default' : dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 # }
 
 
-DATABASES = {
-    'default' : dj_database_url.config(default=os.environ.get('DATABASE_URL'))
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'SEProject',
-#         'HOST': 'localhost',
-#         'USER': 'root',
-#         'PASSWORD': 'amirmysql2023'
-#     },
-#     # 'lite_db':{
-#     #     "ENGINE": "django.db.backends.sqlite3",
-#     #     "NAME": BASE_DIR / "db.sqlite3",
-#     # }
-# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
