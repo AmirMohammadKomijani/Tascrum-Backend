@@ -1,0 +1,8 @@
+title of card,list of the card,members of card,labels of card,start date of card,due date of card,reminder of card,storypoint of card,estimate of card,description of card,status of card
+card 2 list 4,board 1 list2,"aryan_sabet, mh_mirza, amir_komijani","[{'title': 'backend', 'color': 'seagreen'}, {'title': 'devops', 'color': 'seagreen'}, {'title': 'front end', 'color': 'seagreen'}]",2023-12-01T17:15:44.146000Z,2023-10-29T00:00:00Z,1 Day before,0,0,,overdue
+card2,board 1 list1,,[],2023-12-01T18:26:21.806000Z,2023-11-27T11:13:56.797000Z,At time of due date,0,0,,overdue
+dnd test2 change,List1 board5,"amir_komijani, matin_mahmoodkhani","[{'title': 'backend', 'color': 'seagreen'}, {'title': 'front end', 'color': 'seagreen'}, {'title': 'tamrakoz 2', 'color': 'seagreen'}]",2023-11-13T20:30:00Z,2023-11-21T20:30:00Z,At time of due date,17,7,,overdue
+card 1 list 2 new,board 1 list1,amir_komijani,"[{'title': 'devops', 'color': 'seagreen'}, {'title': 'front end', 'color': 'seagreen'}]",2023-11-29T12:53:05.640000Z,2023-10-29T00:00:00Z,1 Day before,5,4,mamad,overdue
+self-assignment card check,List1 board5,"matin_mahmoodkhani, amir_komijani","[{'title': 'front end', 'color': 'seagreen'}, {'title': 'devops', 'color': 'seagreen'}, {'title': 'backend', 'color': 'seagreen'}]",2023-11-29T13:11:10.632000Z,2023-11-17T11:28:50.501000Z,At time of due date,5,0,,overdue
+card 1 list 5,board 1 list2,"aryan_sabet, amir_komijani",[],2023-12-01T16:30:03.952000Z,2023-10-29T00:00:00Z,1 Day before,0,0,,overdue
+card 1 list 4,List1 board5,"amir_komijani, ali_samari, ehsan_ahmadpoor","[{'title': 'backend', 'color': 'seagreen'}, {'title': 'front end', 'color': 'seagreen'}]",2023-11-29T12:53:05.642000Z,2023-10-29T00:00:00Z,1 Day before,5,8,mamad,overdue
