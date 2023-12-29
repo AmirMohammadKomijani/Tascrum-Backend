@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import ModelViewSet
 from .models import *
 from Auth.models import User
-from .utils import generate_invitation_link,OPENAI_API_KEY
+from .utils import OPENAI_API_KEY
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
@@ -90,6 +90,26 @@ class BoardViewSet(ModelViewSet):
         
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='join/(?P<invitation_link>[^/.]+)', permission_classes=[IsAuthenticated])
+    def join(self, request, invitation_link=None):
+        board = get_object_or_404(Board, invitation_link=invitation_link)
+        member, created = Member.objects.get_or_create(user_id=request.user.id)
+
+        if not board.members.filter(id=member.id).exists():
+            board.members.add(member)
+            return Response({'status': 'Member added to the board', 'board_id': board.id}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'Member already in board', 'board_id': board.id}, status=status.HTTP_200_OK)
+        
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def reset(self, request, pk=None):
+        board = self.get_object()
+        board.invitation_link = str(uuid.uuid4())
+        board.save()
+
+        return Response({'status': 'Invitation link reset', 'new_invitation_link': board.invitation_link}, status=status.HTTP_200_OK)
+    
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
@@ -106,15 +126,15 @@ class CreateBoardView(ModelViewSet):
         return {'user_id':self.request.user.id}
     
     def perform_create(self, serializer):
-        board = serializer.save()
-        invitation_link = generate_invitation_link()
-        board.invitation_link = invitation_link
-        board.save()
-        Lable.objects.create(board=board, color='#e67c73', title='')
-        Lable.objects.create(board=board, color='#f7cb4d', title='')
-        Lable.objects.create(board=board, color='#41b375', title='')
-        Lable.objects.create(board=board, color='#7baaf7', title='')
-        Lable.objects.create(board=board, color='#ba67c8', title='')
+            board = serializer.save()
+            # invitation_link = generate_invitation_link()
+            # board.invitation_link = invitation_link
+            # board.save()
+            Lable.objects.create(board=board, color='#e67c73', title='')
+            Lable.objects.create(board=board, color='#f7cb4d', title='')
+            Lable.objects.create(board=board, color='#41b375', title='')
+            Lable.objects.create(board=board, color='#7baaf7', title='')
+            Lable.objects.create(board=board, color='#ba67c8', title='')
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id)
@@ -146,14 +166,14 @@ class BoardStarUpdate(ModelViewSet):
         serializer.save()
         return Response(serializer.data)
     
-class BoardInvitationLinkView(ModelViewSet):
-    queryset = Board.objects.all()
-    serializer_class = BoardInviteLink
+# class BoardInvitationLinkView(ModelViewSet):
+#     queryset = Board.objects.all()
+#     serializer_class = BoardInviteLink
 
-    def get_invitation_link(self, request):
-        board_id = request.GET.get('board_id')
-        invitation_link = Board.objects.get(id=board_id).invitation_link
-        return HttpResponse(invitation_link)
+#     def get_invitation_link(self, request):
+#         board_id = request.GET.get('board_id')
+#         invitation_link = Board.objects.get(id=board_id).invitation_link
+#         return HttpResponse(invitation_link)
     
 class BoardRecentlyViewedView(ModelViewSet):
     serializer_class = BoardRecentlyViewed
@@ -162,6 +182,21 @@ class BoardRecentlyViewedView(ModelViewSet):
     def get_queryset(self):
         member_id = Member.objects.get(user_id = self.request.user.id)
         return Board.objects.filter(members = member_id).order_by('-lastseen')[:3]
+    
+
+class BoardInvitationLinkView(ModelViewSet):
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer
+
+    def get_invitation_link(self, request):
+        # Get the board ID from the request.
+        board_id = request.GET.get('board_id')
+
+        # Get the invitation link for the board.
+        invitation_link = Board.objects.get(id=board_id).invitation_link
+
+        # Return the invitation link to the frontend.
+        return HttpResponse(invitation_link)
         
 ### List view
 class ListView(ModelViewSet):

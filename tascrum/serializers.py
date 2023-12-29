@@ -157,16 +157,16 @@ class BoardSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField()
     class Meta:
         model = Board
-        fields = ['id','title','backgroundimage','workspace','list','lastseen','has_star']
+        fields = ['id','title','backgroundimage','workspace','list','lastseen','has_star', 'invitation_link']
 
     def get_list(self, obj):
         list = obj.lboard.all()
         return BoardListSerializer(list, many=True).data
 
-class BoardInviteLink(serializers.ModelSerializer):
-    class Meta:
-        model = Board
-        fields = ['id','invitation_link']
+# class BoardInviteLink(serializers.ModelSerializer):
+#     class Meta:
+#         model = Board
+#         fields = ['id','invitation_link']
     
 
 class CreateBoardSerializer(serializers.ModelSerializer):

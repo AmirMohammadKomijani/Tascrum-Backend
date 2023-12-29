@@ -30,6 +30,7 @@ router.register('board-star-update',views.BoardStarUpdate,basename='board-star-u
 router.register('board-invitation-link',views.BoardInvitationLinkView,basename='board-invitation-link')
 router.register('starred-boards',views.BoardStarView,basename='starred-boards')
 router.register('star',views.BoardStarUpdate,basename='star')
+# router.register('board-invitation-link',views.BoardInvitationLinkView,basename='board-invitation-link')
 router.register('crboard',views.CreateBoardView,basename='crboard')
 router.register('recentlyviewed',views.BoardRecentlyViewedView,basename='recentlyviewed')
 router.register('board-labels',views.LabelBoardView,basename='board-labels')
