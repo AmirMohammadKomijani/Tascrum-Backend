@@ -62,6 +62,7 @@ router.register('crlist',views.CreateListView,basename='crlist')
 
 ### card details urls
 router.register('card',views.CardView,basename='card')
+router.register('card-member',views.CardViewMember,basename='card-member')
 router.register('crcard',views.CreateCardView,basename='crcard')
 router.register('checklist',views.CardChecklistView,basename='checklist')
 router.register('crchecklist',views.CreateChecklistView,basename='crchecklist')

@@ -229,6 +229,14 @@ class CardView(ModelViewSet):
         board_id = self.request.query_params.get('board')
         list_id = List.objects.filter(board__in = board_id)
         return Card.objects.filter(list__in=list_id)
+    
+class CardViewMember(ModelViewSet):
+    serializer_class = CardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Card.objects.filter(members__user=user)
 
 class CreateCardView(ModelViewSet):
     # allowed_methods = ('POST','HEAD','OPTIONS')
