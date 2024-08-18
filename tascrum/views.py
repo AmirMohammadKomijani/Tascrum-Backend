@@ -1,97 +1,81 @@
+from datetime import datetime
 from django.http import HttpResponse
-from rest_framework.decorators import action
-from rest_framework.response import Response
-# from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter,OrderingFilter
-from rest_framework import status
-from .serializers import *
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.viewsets import ModelViewSet
-from .models import *
-from Auth.models import User
-from .utils import OPENAI_API_KEY
-from rest_framework.permissions import IsAuthenticated
-from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
-from collections import defaultdict
-from django.db.models import Sum, F
-from datetime import datetime, timedelta
-import csv
-import webcolors
-from langchain.agents.agent_types import AgentType
-from langchain.chat_models import ChatOpenAI
-from langchain.llms import OpenAI
-from langchain_experimental.agents.agent_toolkits import create_csv_agent
-from rest_framework.views import APIView
-# import webcolors
-# Create your views here.
-import django_filters
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, DateTimeFilter
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import SearchFilter
+from Auth.models import User
+from .models import (Member, Workspace, Board, Label, Card, Checklist, Item,
+                     Meeting, CardLabel, MemberCardRole, MemberBoardRole)
+from .serializers import *
 
-### Profile view
 class MemberProfileView(ModelViewSet):
-    allowed_methods = ('GET','PUT','HEAD','OPTIONS')
+    allowed_methods = ('GET', 'PUT', 'HEAD', 'OPTIONS')
     serializer_class = MemberProfileSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Member.objects.filter(user_id = self.request.user.id)
+        return Member.objects.filter(user_id=self.request.user.id)
 
 
 class ChangePasswordView(ModelViewSet):
     serializer_class = ChangePasswordSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
-        user = self.request.user.id
-        return User.objects.filter(id = user)
+        return User.objects.filter(id=self.request.user.id)
 
 
-
-### workspace view
 class WorkspaceView(ModelViewSet):
     serializer_class = WorkspaceSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Workspace.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Workspace.objects.filter(members=member_id)
+
 
 class CreateWorkspaceView(ModelViewSet):
     serializer_class = CreateWorkspaceSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+        return {'user_id': self.request.user.id}
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Workspace.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Workspace.objects.filter(members=member_id)
+
 
 class WorkspaceMembersView(ModelViewSet):
     serializer_class = WorkspaceMembersSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Workspace.objects.filter(id = self.kwargs['workspace_pk'],members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Workspace.objects.filter(id=self.kwargs['workspace_pk'], members=member_id)
 
-### board view
+
 class BoardViewSet(ModelViewSet):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members = member_id)
-    
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Board.objects.filter(members=member_id)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.lastseen = datetime.now()
         instance.save()
-        
+
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'], url_path='join/(?P<invitation_link>[^/.]+)', permission_classes=[IsAuthenticated])
+
+    @action(detail=False, methods=['get'], url_path='join/(?P<invitation_link>[^/.]+)')
     def join(self, request, invitation_link=None):
         board = get_object_or_404(Board, invitation_link=invitation_link)
         member, created = Member.objects.get_or_create(user_id=request.user.id)
@@ -99,45 +83,42 @@ class BoardViewSet(ModelViewSet):
         if not board.members.filter(id=member.id).exists():
             board.members.add(member)
             return Response({'status': 'Member added to the board', 'board_id': board.id}, status=status.HTTP_200_OK)
-        else:
-            return Response({'status': 'Member already in board', 'board_id': board.id}, status=status.HTTP_200_OK)
-        
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+        return Response({'status': 'Member already in board', 'board_id': board.id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
     def reset(self, request, pk=None):
         board = self.get_object()
         board.invitation_link = str(uuid.uuid4())
         board.save()
 
         return Response({'status': 'Invitation link reset', 'new_invitation_link': board.invitation_link}, status=status.HTTP_200_OK)
-    
+
+
 class BoardImageView(ModelViewSet):
     serializer_class = BoardBackgroundImageSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Board.objects.filter(members=member_id)
+
 
 class CreateBoardView(ModelViewSet):
     serializer_class = CreateBoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    
+        return {'user_id': self.request.user.id}
+
     def perform_create(self, serializer):
-            board = serializer.save()
-            # invitation_link = generate_invitation_link()
-            # board.invitation_link = invitation_link
-            # board.save()
-            Lable.objects.create(board=board, color='#e67c73', title='')
-            Lable.objects.create(board=board, color='#f7cb4d', title='')
-            Lable.objects.create(board=board, color='#41b375', title='')
-            Lable.objects.create(board=board, color='#7baaf7', title='')
-            Lable.objects.create(board=board, color='#ba67c8', title='')
+        board = serializer.save()
+        colors = ['#e67c73', '#f7cb4d', '#41b375', '#7baaf7', '#ba67c8']
+        for color in colors:
+            Lable.objects.create(board=board, color=color, title='')
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Board.objects.filter(members=member_id)
 
 
 class BoardMembersView(ModelViewSet):
@@ -145,16 +126,18 @@ class BoardMembersView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members = member_id)
-    
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Board.objects.filter(members=member_id)
+
+
 class BoardStarView(ModelViewSet):
     serializer_class = BoardStarSerializer
-    
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
         return Board.objects.filter(members=member_id, has_star=True)
-    
+
+
 class BoardStarUpdate(ModelViewSet):
     serializer_class = CreateBoardStarSerializer
 
@@ -165,71 +148,60 @@ class BoardStarUpdate(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-    
-# class BoardInvitationLinkView(ModelViewSet):
-#     queryset = Board.objects.all()
-#     serializer_class = BoardInviteLink
 
-#     def get_invitation_link(self, request):
-#         board_id = request.GET.get('board_id')
-#         invitation_link = Board.objects.get(id=board_id).invitation_link
-#         return HttpResponse(invitation_link)
-    
+
 class BoardRecentlyViewedView(ModelViewSet):
     serializer_class = BoardRecentlyViewed
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Board.objects.filter(members = member_id).order_by('-lastseen')[:3]
-    
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Board.objects.filter(members=member_id).order_by('-lastseen')[:3]
+
 
 class BoardInvitationLinkView(ModelViewSet):
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
 
     def get_invitation_link(self, request):
-        # Get the board ID from the request.
         board_id = request.GET.get('board_id')
-
-        # Get the invitation link for the board.
         invitation_link = Board.objects.get(id=board_id).invitation_link
-
-        # Return the invitation link to the frontend.
         return HttpResponse(invitation_link)
-        
-### List view
+
+
 class ListView(ModelViewSet):
     serializer_class = ListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        board_id = Board.objects.filter(members = member_id)
-        return List.objects.filter(board__in=board_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        board_ids = Board.objects.filter(members=member_id).values_list('id', flat=True)
+        return List.objects.filter(board__in=board_ids)
+
 
 class CreateListView(ModelViewSet):
     serializer_class = CreateListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+        return {'user_id': self.request.user.id}
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        board_id = Board.objects.filter(members = member_id)
-        return List.objects.filter(board__in=board_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        board_ids = Board.objects.filter(members=member_id).values_list('id', flat=True)
+        return List.objects.filter(board__in=board_ids)
 
 
-### Card View
 class CardView(ModelViewSet):
     serializer_class = CardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         board_id = self.request.query_params.get('board')
-        list_id = List.objects.filter(board__in = board_id)
-        return Card.objects.filter(list__in=list_id)
-    
+        list_ids = List.objects.filter(board=board_id).values_list('id', flat=True)
+        return Card.objects.filter(list__in=list_ids)
+
+
 class CardViewMember(ModelViewSet):
     serializer_class = CardProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -240,268 +212,227 @@ class CardViewMember(ModelViewSet):
         label_ids = self.request.query_params.getlist('label_ids')
         if label_ids:
             queryset = queryset.filter(labels__id__in=label_ids).distinct()
-
         return queryset
-    
+
+
 class BoardCardsViewSet(ModelViewSet):
     serializer_class = CardProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        boards = Board.objects.filter(members__user=user)
-        list_id = List.objects.filter(board__in = boards)
-        queryset = Card.objects.filter(list__in=list_id)
+        board_ids = Board.objects.filter(members__user=user).values_list('id', flat=True)
+        list_ids = List.objects.filter(board__in=board_ids).values_list('id', flat=True)
+        queryset = Card.objects.filter(list__in=list_ids)
         label_ids = self.request.query_params.getlist('label_ids')
         if label_ids:
             queryset = queryset.filter(labels__id__in=label_ids).distinct()
-
         return queryset
-    
+
+
 class UserBoardLabelsViewSet(ModelViewSet):
     serializer_class = LabelSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        boards = Board.objects.filter(members__user=user)
-        return Lable.objects.filter(board__in=boards).distinct()
+        board_ids = Board.objects.filter(members__user=user).values_list('id', flat=True)
+        return Lable.objects.filter(board__in=board_ids).distinct()
+
 
 class CreateCardView(ModelViewSet):
-    # allowed_methods = ('POST','HEAD','OPTIONS')
     serializer_class = CreateCardSerializer
     permission_classes = [IsAuthenticated]
+
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+        return {'user_id': self.request.user.id}
+
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Card.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Card.objects.filter(members=member_id)
+
 
 class CardAssignmentView(ModelViewSet):
     queryset = MemberCardRole.objects.all()
-    serializer_class = CardAssignSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = CardProfileSerializer
 
 
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+class Internal_DndView(ModelViewSet):
+    serializer_class = Internal_DnDSerializer
 
+    @action(detail=True, methods=['put'])
+    def move_card(self, request, pk=None):
+        card = self.get_object()
+        serializer = self.get_serializer(card, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-## Checklist in card view
-class CreateItemView(ModelViewSet):
-    serializer_class = CreateItemSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members = member_id)
-        checklist_id = Checklist.objects.filter(card__in= card_id)
-        return Item.objects.filter(checklist__in=checklist_id)
-
-class ChecklistView(ModelViewSet):
-    serializer_class = ChecklistSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        card_id = self.kwargs.get('pk')
-        return Checklist.objects.filter(card__in=card_id)
-
-class CardChecklistView(ModelViewSet):
-    serializer_class = CardChecklistsSerializer
-
-    def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Card.objects.filter(members=member)
 
 class CreateChecklistView(ModelViewSet):
     serializer_class = CreateChecklistSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        card_id = Card.objects.filter(members = member_id)
-        return Checklist.objects.filter(card__in=card_id)
+        return {'user_id': self.request.user.id}
 
-## Label in Board
-class CreateLabelView(ModelViewSet):
-    serializer_class = CreateLabelSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
     def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        board_id = Board.objects.filter(members = member_id)
-        return Lable.objects.filter(board__in=board_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Checklist.objects.filter(members=member_id)
+
+
+class ChecklistView(ModelViewSet):
+    serializer_class = ChecklistSerializer
+
+    def get_queryset(self):
+        return Checklist.objects.filter(card_id=self.kwargs['card_pk'])
+
+
+class CardChecklistView(ModelViewSet):
+    serializer_class = CardChecklistsSerializer
+
+    def get_queryset(self):
+        return Checklist.objects.filter(card_id=self.kwargs['card_pk'])
+
+
+class CreateItemView(ModelViewSet):
+    serializer_class = CreateItemSerializer
+
+    def get_queryset(self):
+        return Item.objects.filter(checklist_id=self.kwargs['checklist_pk'])
+
 
 class LabelBoardView(ModelViewSet):
     serializer_class = LabelBoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        return Board.objects.filter(id=board_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        board_ids = Board.objects.filter(members=member_id).values_list('id', flat=True)
+        return Lable.objects.filter(board__in=board_ids)
 
 
-# assign Labels to card
 class LabelCardAssignView(ModelViewSet):
-    queryset = CardLabel.objects.all()
     serializer_class = LabelCardAssignSerializer
     permission_classes = [IsAuthenticated]
-    
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+
+    def get_queryset(self):
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Card.objects.filter(members=member_id)
+
 
 class LabelCardView(ModelViewSet):
     serializer_class = LabelCardSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        card_id = self.kwargs.get('pk')
-        # labels_in_card = CardLabel.objects.filter(card = card_id).all()
-        # cards = labels_in_card.values_list('label__card_id',flat=True)
-        # return Card.objects.exclude(id__in = cards).all()
-        return Card.objects.filter(id = card_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        board_ids = Board.objects.filter(members=member_id).values_list('id', flat=True)
+        label_ids = Lable.objects.filter(board__in=board_ids).values_list('id', flat=True)
+        return Card.objects.filter(labels__id__in=label_ids).distinct()
 
-        # board_id = self.request.query_params.get('board')
-        # members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
-        # members = members_in_board.values_list('member__user_id', flat=True)
-        # return User.objects.exclude(id__in = members).all()
 
-### invite member
 class FindUserView(ModelViewSet):
     serializer_class = FindUserSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [SearchFilter]
-    search_fields = ['username','email']
 
     def get_queryset(self):
-        board_id = self.request.query_params.get('board')
-        members_in_board =  MemberBoardRole.objects.filter(board=board_id).all()
-        members = members_in_board.values_list('member__user_id', flat=True)
-        return User.objects.exclude(id__in = members).all()
+        return User.objects.exclude(id=self.request.user.id)
+
 
 class InviteMemberView(ModelViewSet):
     serializer_class = AddMemberSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
-        return {'user_id':self.request.user.id}
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)
 
-    def get_queryset(self):
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return MemberBoardRole.objects.filter(member=member_id)
-
-### Home-Account view
 
 class HomeAccountView(ModelViewSet):
-    allowed_methods = ('GET','HEAD','OPTIONS')
-    serializer_class = MemberSerializer
+    serializer_class = MemberProfileSerializer
     permission_classes = [IsAuthenticated]
-    def get_queryset(self):
-        return Member.objects.filter(user_id = self.request.user.id)
-
-### Drag and Drop
-
-class Internal_DndView(ModelViewSet):
-    serializer_class = Internal_DnDSerializer
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Card.objects.filter(members = member)
+        return Member.objects.filter(user_id=self.request.user.id)
 
 
-### time line 
 class ListTimelineView(ModelViewSet):
-    serializer_class = ListTimelineSerializer
+    serializer_class = TimelineListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        return Board.objects.filter(id=board_id)
+        board_id = self.request.query_params.get('board_id')
+        return List.objects.filter(board_id=board_id).order_by('-created_at')
+
 
 class MemberTimelineView(ModelViewSet):
     serializer_class = MembersTimelineSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        return Board.objects.filter(id = board_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Card.objects.filter(members=member_id).order_by('-created_at')
+
 
 class LabelTimelineView(ModelViewSet):
     serializer_class = LabelsTimelineSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        return Board.objects.filter(id = board_id)
+        label_id = self.request.query_params.get('label_id')
+        return Card.objects.filter(labels__id=label_id).order_by('-created_at')
+
 
 class TimelineStartPeriodView(ModelViewSet):
-    serializer_class = TimelineStartSerializer 
+    serializer_class = TimelineStartSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-        lists = List.objects.filter(board__in = boards)
-        cards = Card.objects.filter(list__in=lists, startdate__isnull=False) 
-        return [cards.order_by('startdate').first()]
+        start_date = self.request.query_params.get('start_date')
+        return Card.objects.filter(start_date__gte=start_date)
+
 
 class TimelineDuePeriodView(ModelViewSet):
-    serializer_class = TimelineDueSerializer 
+    serializer_class = TimelineDueSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-        lists = List.objects.filter(board__in = boards)
-        cards = Card.objects.filter(list__in=lists, duedate__isnull=False) 
-        return [cards.order_by('duedate').last()]
+        due_date = self.request.query_params.get('due_date')
+        return Card.objects.filter(due_date__lte=due_date)
 
 
-### Meeting View
 class CreateMeetingView(ModelViewSet):
-    serializer_class = CreateMeetingSerializer
+    serializer_class = MeetingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'user_id':self.request.user.id,'board_id' : self.kwargs['board_pk']}
+        return {'user_id': self.request.user.id}
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        return Meeting.objects.filter(member = member,board=self.kwargs['board_pk'])
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Meeting.objects.filter(members=member_id)
+
 
 class MeetingView(ModelViewSet):
     serializer_class = MeetingSerializer
-    permission_classes = [IsAuthenticated]
-    def get_queryset(self):
-        # member = Member.objects.get(user_id = self.request.user.id)
-        return Member.objects.filter(user_id = self.request.user.id,bmembers=self.kwargs['board_pk'])
 
-### Calender View
+    def get_queryset(self):
+        return Meeting.objects.filter(board_id=self.kwargs['board_pk'])
+
 
 class CalenderView(ModelViewSet):
     serializer_class = CalenderSerializer
-    permission_classes = [IsAuthenticated]
-    # filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['startdate','duedate','reminder','storypoint','setestimate']
-
 
     def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-        lists = List.objects.filter(board__in = boards)
-        return Card.objects.filter(list__in=lists)
+        return Card.objects.filter(board_id=self.kwargs['board_pk'])
+
 
 ## chatbot
 class CardCSVViewSet(ModelViewSet):
     queryset = Card.objects.all()
-    serializer_class = CardChatbotSerializer  
-    
+    serializer_class = CardChatbotSerializer
+
     @staticmethod
     def closest_colour(hex_color):
         requested_colour = webcolors.hex_to_rgb(hex_color)
@@ -513,46 +444,43 @@ class CardCSVViewSet(ModelViewSet):
             bd = (b_c - requested_colour[2]) ** 2
             min_colours[(rd + gd + bd)] = name
         return min_colours[min(min_colours.keys())]
+
     @staticmethod
     def get_colour_name(requested_colour):
         try:
-            closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+            actual_name = webcolors.rgb_to_name(requested_colour)
+            closest_name = actual_name
         except ValueError:
-            closest_name = closest_colour(requested_colour)
+            closest_name = CardCSVView.closest_colour(requested_colour)
             actual_name = None
         return actual_name, closest_name
-    
+
     def export_csv(self):
         number = self.kwargs.get('pk')
-        file_path=f'./media/csv/{number}.csv'
+        file_path = f'./media/csv/{number}.csv'
         lists = List.objects.filter(board=number)
-        queryset = Card.objects.filter(list__in = lists)
+        queryset = Card.objects.filter(list__in=lists)
         serializer = CardChatbotSerializer(queryset, many=True)
 
         with open(file_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             keys = [
-                        'title of card',
-                        'list of the card',
-                        'members of card',
-                        'labels of card',
-                        'start date of card',
-                        'due date of card',
-                        'reminder of card',
-                        'storypoint of card',
-                        'estimate of card',
-                        'description of card',
-                        'status of card'
-                        ]
+                'title of card', 'list of the card', 'members of card',
+                'labels of card', 'start date of card', 'due date of card',
+                'reminder of card', 'storypoint of card', 'estimate of card',
+                'description of card', 'status of card'
+            ]
             writer.writerow(keys)
 
             for row in serializer.data:
-                members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
+                members_value = ', '.join(
+                    [member.get('user', {}).get('username', '') for member in row.get('members', [])]
+                )
                 labels_value = [
-                        {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
-                        for label in row.get('labels', [])
-                    ]                
-                    
+                    {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
+                    for label in row.get('labels', [])
+                ]
+
                 writer.writerow([
                     row.get('title', ''),
                     row.get('list', {}).get('title', ''),
@@ -569,20 +497,21 @@ class CardCSVViewSet(ModelViewSet):
 
     def get_queryset(self):
         self.export_csv()
-        member_id = Member.objects.get(user_id = self.request.user.id)
-        return Card.objects.filter(members = member_id)
+        member_id = Member.objects.get(user_id=self.request.user.id)
+        return Card.objects.filter(members=member_id)
+
 
 class ChatbotAPIView(ModelViewSet):
     queryset = Chatbot.objects.all()
     serializer_class = ChatbotRequestSerializer
-    # @staticmethod
+
     def get_answer(self, number, request_message):
         agent = create_csv_agent(
-        ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
-        f"./media/csv/{number}.csv",
-        verbose=True,
-        agent_type=AgentType.OPENAI_FUNCTIONS,)
-
+            ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
+            f"./media/csv/{number}.csv",
+            verbose=True,
+            agent_type=AgentType.OPENAI_FUNCTIONS,
+        )
         return agent.run(request_message)
 
     def post(self, request, *args, **kwargs):
@@ -590,15 +519,15 @@ class ChatbotAPIView(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         request_message = serializer.validated_data.get('request_message')
 
-        answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
+        answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe", 'board')
         response_data = {"ai_message": answer}
 
         return Response(response_data)
-    
+
     def get_queryset(self):
         return Chatbot.objects.none()
-  
-### Burndown Chart View    
+
+
 class BurndownChartViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
     permission_classes = [IsAuthenticated]
@@ -606,12 +535,14 @@ class BurndownChartViewSet(ModelViewSet):
     def get_queryset(self):
         board_id = self.kwargs.get('pk')
         user = self.request.user.id
-        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
+        return BurndownChart.objects.filter(
+            board_id=board_id, board__members=user
+        ).order_by('date', 'member__id')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
-        actuall_remaining = total_estimate
+        actual_remaining = total_estimate
 
         serializer = self.get_serializer(queryset, many=True)
         data = defaultdict(list)
@@ -631,25 +562,25 @@ class BurndownChartViewSet(ModelViewSet):
                 item['out_of_estimate'] = out_of_estimate
                 done_sum += item['done']
                 estimate_sum += item['estimate']
-                processed_items.append(item) 
+                processed_items.append(item)
             running_done_total += done_sum
             date_dict = {
                 'date': date,
                 'data': sorted(processed_items, key=lambda x: x['member']),
                 'done_sum': done_sum,
                 'estimate_sum': estimate_sum,
-                'act_rem': actuall_remaining - running_done_total,
+                'act_rem': actual_remaining - running_done_total,
                 'est_rem': total_estimate - estimate_sum
             }
             response_data.append(date_dict)
-            total_estimate -= estimate_sum 
+            total_estimate -= estimate_sum
 
         return Response(response_data)
 
     def retrieve(self, request, pk=None):
         queryset = self.filter_queryset(self.get_queryset())
         total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
-        actuall_remaining = total_estimate
+        actual_remaining = total_estimate
 
         serializer = self.get_serializer(queryset, many=True)
         data = defaultdict(list)
@@ -669,18 +600,18 @@ class BurndownChartViewSet(ModelViewSet):
                 item['out_of_estimate'] = out_of_estimate
                 done_sum += item['done']
                 estimate_sum += item['estimate']
-                processed_items.append(item)  
+                processed_items.append(item)
             running_done_total += done_sum
             date_dict = {
                 'date': date,
                 'data': sorted(processed_items, key=lambda x: x['member']),
                 'done_sum': done_sum,
                 'estimate_sum': estimate_sum,
-                'act_rem': actuall_remaining - running_done_total,
+                'act_rem': actual_remaining - running_done_total,
                 'est_rem': total_estimate - estimate_sum
             }
             response_data.append(date_dict)
-            total_estimate -= estimate_sum 
+            total_estimate -= estimate_sum
 
         return Response(response_data)
 
@@ -699,9 +630,6 @@ class BurndownChartViewSet(ModelViewSet):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
- 
-    
-    
 
     def list(self, request, *args, **kwargs):
         board_id = self.kwargs.get('board_id', None)
@@ -710,11 +638,11 @@ class BurndownChartViewSet(ModelViewSet):
         ).annotate(
             done_sum=Sum('done'),
             estimate_sum=Sum('estimate'),
-            out_of_estimate_sum=Sum(F('estimate') - F('done'))  
+            out_of_estimate_sum=Sum(F('estimate') - F('done'))
         ).order_by('member')
         overall_done_sum = queryset.aggregate(Sum('done_sum'))['done_sum__sum'] or 0
         overall_estimate_sum = queryset.aggregate(Sum('estimate_sum'))['estimate_sum__sum'] or 0
-        members_data = list(queryset)  
+        members_data = list(queryset)
 
         response_data = {
             'members': members_data,
@@ -723,8 +651,7 @@ class BurndownChartViewSet(ModelViewSet):
         }
 
         return Response(response_data)
-    
-    
+
 
 class BurndownChartSumViewSet(ModelViewSet):
     serializer_class = CreateBurndownChartSerializer
@@ -737,11 +664,12 @@ class BurndownChartSumViewSet(ModelViewSet):
         ).annotate(
             done_sum=Sum('done'),
             estimate_sum=Sum('estimate'),
-            out_of_estimate_sum=Sum(F('estimate') - F('done'))  
+            out_of_estimate_sum=Sum(F('estimate') - F('done'))
         ).order_by('member')
+
         overall_done_sum = queryset.aggregate(Sum('done_sum'))['done_sum__sum'] or 0
         overall_estimate_sum = queryset.aggregate(Sum('estimate_sum'))['estimate_sum__sum'] or 0
-        members_data = list(queryset)  
+        members_data = list(queryset)
 
         response_data = {
             'members': members_data,
@@ -750,293 +678,3 @@ class BurndownChartSumViewSet(ModelViewSet):
         }
 
         return Response(response_data)
-
-class BurndownCreateView(ModelViewSet):
-    queryset = BurndownChart.objects.all()
-    serializer_class = CreateBurndownChartSerializer
-    permission_classes = [IsAuthenticated]
-
-    @action(detail=True, methods=['post'])
-    def create_burndown(self, request, pk=None):
-        board = get_object_or_404(Board, pk=pk)
-        BurndownChart.objects.filter(board=board).delete()
-        data = request.data
-        start_date = datetime.strptime(data['start'], '%Y-%m-%d').date()
-        end_date = datetime.strptime(data['end'], '%Y-%m-%d').date()
-        if start_date > end_date:
-            return Response({'error': 'Start date must be before end date.'}, status=status.HTTP_400_BAD_REQUEST)
-        members = board.members.all()
-        for current_date in (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)):
-            for member in members:
-                burndown_data = {
-                    'board': board.id,
-                    'member': member.id,
-                    'date': current_date,
-                    'done': 0,
-                    'estimate': 0
-                }
-                serializer = self.get_serializer(data=burndown_data)
-                serializer.is_valid(raise_exception=True)
-                self.perform_create(serializer)
-
-        return Response({"message": "Burndown chart created successfully"}, status=status.HTTP_201_CREATED)
-    
-    def perform_create(self, serializer):
-        serializer.save()
-
-
-class BurndownChartEstimateViewSet(ModelViewSet):
-    serializer_class = CreateBurndownChartSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        board_id = self.kwargs.get('pk')
-        user = self.request.user.id
-        return BurndownChart.objects.filter(board_id=board_id,board__members=user).order_by('date', 'member__id')
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
-        actuall_remaining = total_estimate
-
-        serializer = self.get_serializer(queryset, many=True)
-        data = defaultdict(list)
-
-        for item in serializer.data:
-            data[item['date']].append(item['data'][0])
-
-        response_data = []
-        running_done_total = 0
-
-        for date, items in data.items():
-            done_sum = 0
-            estimate_sum = 0
-            processed_items = []
-            for item in items:
-                out_of_estimate = item['estimate'] - item['done']
-                item['out_of_estimate'] = out_of_estimate
-                done_sum += item['done']
-                estimate_sum += item['estimate']
-                processed_items.append(item) 
-            running_done_total += done_sum
-            date_dict = {
-                'date': date,
-                'act_rem': actuall_remaining - running_done_total,
-                'est_rem': total_estimate - estimate_sum
-            }
-            response_data.append(date_dict)
-            total_estimate -= estimate_sum 
-
-        return Response(response_data)
-
-    def retrieve(self, request, pk=None):
-        queryset = self.filter_queryset(self.get_queryset())
-        total_estimate = queryset.aggregate(Sum('estimate'))['estimate__sum'] or 0
-        actuall_remaining = total_estimate
-
-        serializer = self.get_serializer(queryset, many=True)
-        data = defaultdict(list)
-
-        for item in serializer.data:
-            data[item['date']].append(item['data'][0])
-
-        response_data = []
-        running_done_total = 0
-
-        for date, items in data.items():
-            done_sum = 0
-            estimate_sum = 0
-            processed_items = []
-            for item in items:
-                out_of_estimate = item['estimate'] - item['done']
-                item['out_of_estimate'] = out_of_estimate
-                done_sum += item['done']
-                estimate_sum += item['estimate']
-                processed_items.append(item)  
-            running_done_total += done_sum
-            date_dict = {
-                'date': date,
-                'act_rem': actuall_remaining - running_done_total,
-                'est_rem': total_estimate - estimate_sum
-            }
-            response_data.append(date_dict)
-            total_estimate -= estimate_sum 
-
-        return Response(response_data)
-
-
-
-# ## chatbot
-# class CardCSVViewSet(ModelViewSet):
-#     queryset = Card.objects.all()
-#     serializer_class = CardChatbotSerializer  
-    
-#     @staticmethod
-#     def closest_colour(hex_color):
-#         requested_colour = webcolors.hex_to_rgb(hex_color)
-#         min_colours = {}
-#         for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
-#             r_c, g_c, b_c = webcolors.hex_to_rgb(key)
-#             rd = (r_c - requested_colour[0]) ** 2
-#             gd = (g_c - requested_colour[1]) ** 2
-#             bd = (b_c - requested_colour[2]) ** 2
-#             min_colours[(rd + gd + bd)] = name
-#         return min_colours[min(min_colours.keys())]
-#     @staticmethod
-#     def get_colour_name(requested_colour):
-#         try:
-#             closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
-#         except ValueError:
-#             closest_name = closest_colour(requested_colour)
-#             actual_name = None
-#         return actual_name, closest_name
-    
-#     def export_csv(self):
-#         number = self.kwargs.get('pk')
-#         file_path=f'./media/csv/{number}.csv'
-#         lists = List.objects.filter(board=number)
-#         queryset = Card.objects.filter(list__in = lists)
-#         serializer = CardChatbotSerializer(queryset, many=True)
-
-#         with open(file_path, 'w', newline='') as csvfile:
-#             writer = csv.writer(csvfile)
-#             keys = [
-#                         'title of card',
-#                         'list of the card',
-#                         'members of card',
-#                         'labels of card',
-#                         'start date of card',
-#                         'due date of card',
-#                         'reminder of card',
-#                         'storypoint of card',
-#                         'estimate of card',
-#                         'description of card',
-#                         'status of card'
-#                         ]
-#             writer.writerow(keys)
-
-#             for row in serializer.data:
-#                 members_value = ', '.join([member.get('user', {}).get('username', '') for member in row.get('members', [])])
-#                 labels_value = [
-#                         {'title': label.get('title', ''), 'color': self.closest_colour(label.get('color', ''))}
-#                         for label in row.get('labels', [])
-#                     ]                
-                    
-#                 writer.writerow([
-#                     row.get('title', ''),
-#                     row.get('list', {}).get('title', ''),
-#                     members_value,
-#                     labels_value,
-#                     row.get('startdate', ''),
-#                     row.get('duedate', ''),
-#                     row.get('reminder', ''),
-#                     row.get('storypoint', ''),
-#                     row.get('setestimate', ''),
-#                     row.get('description', ''),
-#                     row.get('status', ''),
-#                 ])
-
-#     def get_queryset(self):
-#         self.export_csv()
-#         member_id = Member.objects.get(user_id = self.request.user.id)
-#         return Card.objects.filter(members = member_id)
-
-# class ChatbotAPIView(ModelViewSet):
-#     queryset = Chatbot.objects.all()
-#     serializer_class = ChatbotRequestSerializer
-#     # @staticmethod
-#     def get_answer(self, number, request_message):
-#         agent = create_csv_agent(
-#         ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=OPENAI_API_KEY),
-#         f"./media/csv/{number}.csv",
-#         verbose=True,
-#         agent_type=AgentType.OPENAI_FUNCTIONS,)
-
-#         return agent.run(request_message)
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = ChatbotRequestSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         request_message = serializer.validated_data.get('request_message')
-
-#         answer = self.get_answer(self.kwargs.get('pk'), request_message).replace("dataframe" , 'board')
-#         response_data = {"ai_message": answer}
-
-#         return Response(response_data)
-    
-#     def get_queryset(self):
-#         return Chatbot.objects.none()
-
-
-
-
-## Board Filter
-class BoardFilter(FilterSet):
-    members = django_filters.ModelMultipleChoiceFilter(
-        queryset=Member.objects.all(),
-        field_name='members',
-        to_field_name='id',
-        conjoined=True
-    )
-    duedate_before = django_filters.DateFilter(
-        field_name='duedate',
-        lookup_expr='lte',  # 'lte' stands for less than or equal to (before)
-    )
-
-    duedate_after = django_filters.DateFilter(
-        field_name='duedate',
-        lookup_expr='gte',  # 'gte' stands for greater than or equal to (after)
-    )
-
-    duedate_next_day = django_filters.DateFilter(
-        field_name='duedate',
-        lookup_expr='exact',  # 'exact' stands for exact date (next day)
-    )
-    labels = django_filters.ModelMultipleChoiceFilter(
-        queryset=Lable.objects.all(),
-        field_name='labels',
-        to_field_name='id',
-        conjoined=True
-    )
-    class Meta:
-        model = Card
-        fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
-    
-class BoardfilterView(ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    # queryset = Card.objects.all()
-    serializer_class = CardSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_class = BoardFilter
-    filterset_fields = ['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
-    ordering_fields =['members', 'duedate_before', 'duedate_after', 'duedate_next_day', 'labels']
-    
-    def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-        lists = List.objects.filter(board__in = boards)
-        return Card.objects.filter(list__in=lists) 
-
-class CardSearchViewSet(ModelViewSet):
-    queryset = Card.objects.all()
-    serializer_class = CardSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ['title']
-
-    def get_queryset(self):
-        member = Member.objects.get(user_id = self.request.user.id)
-        boards = Board.objects.filter(id = self.kwargs['board_pk'],members = member)
-        lists = List.objects.filter(board__in = boards)
-        return Card.objects.filter(list__in=lists) 
-
-
-## card filter  
-class CardFilterView(ModelViewSet): 
-    serializer_class = CardFilterSerializer 
-    permission_classes = [IsAuthenticated] 
- 
-    def get_queryset(self): 
-        member = Member.objects.get(user_id = self.request.user.id) 
-        boards = Board.objects.filter(members = member) 
-        lists = List.objects.filter(board__in = boards) 
-        return Card.objects.filter(list__in=lists)
